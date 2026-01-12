@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using QuestionarioOnline.Api.GraphQL;
+using QuestionarioOnline.Api.GraphQL.Queries;
 using QuestionarioOnline.Application.Interfaces;
 using QuestionarioOnline.CrossCutting.DependencyInjection;
 using QuestionarioOnline.Infrastructure.Authentication;
 using QuestionarioOnline.Infrastructure.Persistence;
 using System.Text;
+using GraphQL;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -105,6 +108,14 @@ builder.Services.AddCors(options =>
     });
 });
 
+//grapichQL
+
+builder.Services.AddScoped<QuestionarioSchema>();
+builder.Services.AddScoped<QuestionarioQuery>();
+builder.Services.AddGraphQL(otpions => otpions.AddGraphTypes().AddSystemTextJson());
+
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -130,7 +141,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
-
+app.UseGraphQL<QuestionarioSchema>("/graphql");
 app.UseAuthentication();
 app.UseAuthorization();
 
