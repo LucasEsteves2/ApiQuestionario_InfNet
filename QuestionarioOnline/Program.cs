@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuestionarioOnline.Api.GraphQL;
+using QuestionarioOnline.Api.GraphQL.Mutations;
 using QuestionarioOnline.Api.GraphQL.Queries;
 using QuestionarioOnline.Application.Interfaces;
 using QuestionarioOnline.CrossCutting.DependencyInjection;
@@ -112,6 +113,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<QuestionarioSchema>();
 builder.Services.AddScoped<QuestionarioQuery>();
+builder.Services.AddScoped<QuestionarioMutation>();
 builder.Services.AddGraphQL(otpions => otpions.AddGraphTypes().AddSystemTextJson());
 
 

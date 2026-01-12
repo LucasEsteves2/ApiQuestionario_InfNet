@@ -1,4 +1,5 @@
 ﻿using GraphQL.Types;
+using QuestionarioOnline.Api.GraphQL.Mutations;
 using QuestionarioOnline.Api.GraphQL.Queries;
 
 namespace QuestionarioOnline.Api.GraphQL
@@ -8,7 +9,7 @@ namespace QuestionarioOnline.Api.GraphQL
         public QuestionarioSchema(IServiceProvider provider)
         {
             Query = provider.GetRequiredService<QuestionarioQuery>();
-            Mutation = null;
+            Mutation = provider.GetRequiredService<QuestionarioMutation>();
         }
     }
 }

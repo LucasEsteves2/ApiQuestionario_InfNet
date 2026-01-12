@@ -21,7 +21,11 @@ public static class DependencyInjectionConfig
         IConfiguration configuration)
     {
         services.AddDbContext<QuestionarioOnlineDbContext>(options =>
-            options.UseSqlServer(connectionString));
+        {
+            options.UseSqlServer(connectionString);
+            options.EnableSensitiveDataLogging(); // Apenas em DEV
+            options.EnableThreadSafetyChecks(false); // Permite múltiplas operações paralelas
+        });
 
         services.AddScoped<IQuestionarioRepository, QuestionarioRepository>();
         services.AddScoped<IRespostaRepository, RespostaRepository>();
