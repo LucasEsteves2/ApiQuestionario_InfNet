@@ -1,0 +1,49 @@
+{
+  "name": "questionario-frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --no-ssr",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "serve:ssr:questionario-frontend": "node dist/questionario-frontend/server/server.mjs"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^19.1.0",
+    "@angular/common": "^19.1.0",
+    "@angular/compiler": "^19.1.0",
+    "@angular/core": "^19.1.0",
+    "@angular/forms": "^19.1.0",
+    "@angular/platform-browser": "^19.1.0",
+    "@angular/platform-browser-dynamic": "^19.1.0",
+    "@angular/platform-server": "^19.1.0",
+    "@angular/router": "^19.1.0",
+    "@angular/ssr": "^19.1.2",
+    "express": "^4.21.2",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.15.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^19.1.2",
+    "@angular/cli": "^19.1.2",
+    "@angular/compiler-cli": "^19.1.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "typescript": "~5.7.2"
+  }
+}

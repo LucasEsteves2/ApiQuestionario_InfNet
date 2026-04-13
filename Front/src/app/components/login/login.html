@@ -1,0 +1,55 @@
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="auth-escudo">
+      <h2>Bem-vindo de volta!</h2>
+      <p>Acesse o painel administrativo para gerenciar as votações do Fluminense FC.</p>
+      <div class="auth-tricolor">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Entrar</h1>
+        <p>Sistema de Votação Fluminense FC</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="auth-form">
+        @if (error) {
+          <div class="alert alert-error">{{ error }}</div>
+        }
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email" id="email" name="email"
+            [(ngModel)]="email" class="form-control"
+            placeholder="seu&#64;email.com" required />
+        </div>
+
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input
+            type="password" id="senha" name="senha"
+            [(ngModel)]="senha" class="form-control"
+            placeholder="Digite sua senha" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="loading">
+          @if (loading) {
+            <span>Entrando...</span>
+          } @else {
+            <span>Entrar</span>
+          }
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Não tem uma conta?</p>
+        <a routerLink="/register" class="link-grana">Registrar-se</a>
+      </div>
+    </div>
+  </div>
+</div>

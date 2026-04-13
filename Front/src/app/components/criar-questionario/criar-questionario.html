@@ -1,0 +1,88 @@
+<div class="criar-container">
+  <div class="criar-header">
+    <h1>Nova Votação Fluminense</h1>
+    <a routerLink="/admin" class="btn btn-outline">Voltar</a>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" class="criar-form">
+    @if (error) {
+      <div class="alert alert-error">{{ error }}</div>
+    }
+
+    <div class="card">
+      <h2>Informações Básicas</h2>
+      
+      <div class="form-group">
+        <label for="titulo">Título da Votação*</label>
+        <input type="text" id="titulo" [(ngModel)]="titulo" name="titulo" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="descricao">Descrição*</label>
+        <textarea id="descricao" [(ngModel)]="descricao" name="descricao" class="form-control" rows="3" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="dataInicio">Data Início*</label>
+          <input type="date" id="dataInicio" [(ngModel)]="dataInicio" name="dataInicio" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label for="dataFim">Data Fim*</label>
+          <input type="date" id="dataFim" [(ngModel)]="dataFim" name="dataFim" class="form-control" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="perguntas-section">
+      <div class="section-header">
+        <h2>Perguntas</h2>
+        <button type="button" class="btn btn-secondary" (click)="adicionarPergunta()">+ Pergunta</button>
+      </div>
+
+      @for (pergunta of perguntas; track pergunta.ordem; let i = $index) {
+        <div class="card pergunta-card">
+          <div class="pergunta-header">
+            <h3>Pergunta {{ i + 1 }}</h3>
+            @if (perguntas.length > 1) {
+              <button type="button" class="btn btn-danger btn-sm" (click)="removerPergunta(i)">Remover</button>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Texto da Pergunta*</label>
+            <input type="text" [(ngModel)]="pergunta.texto" [name]="'pergunta' + i" class="form-control" required>
+          </div>
+
+          <div class="opcoes-section">
+            <div class="opcoes-header">
+              <label>Opções de Resposta</label>
+              <button type="button" class="btn btn-outline btn-sm" (click)="adicionarOpcao(pergunta)">+ Opção</button>
+            </div>
+
+            @for (opcao of pergunta.opcoes; track opcao.ordem; let j = $index) {
+              <div class="opcao-row">
+                <input type="text" [(ngModel)]="opcao.texto" [name]="'opcao' + i + j" class="form-control" required>
+                @if (pergunta.opcoes.length > 2) {
+                  <button type="button" class="btn btn-danger btn-sm" (click)="removerOpcao(pergunta, j)">X</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/admin" class="btn btn-outline">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="loading">
+        @if (loading) {
+          <span>Criando...</span>
+        } @else {
+          <span>Criar Votação</span>
+        }
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,50 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Painel Administrativo</h1>
+      <p>Bem-vindo, <strong>{{ userName }}</strong></p>
+    </div>
+    <a routerLink="/criar-questionario" class="btn btn-primary">Nova Votação</a>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Carregando votações...</p>
+  </div>
+
+  <div *ngIf="!loading && questionarios.length === 0" class="empty-state card">
+    <div class="empty-icon">🗳️</div>
+    <h2>Nenhuma votação criada</h2>
+    <p>Crie sua primeira votação para o Fluminense</p>
+    <a routerLink="/criar-questionario" class="btn btn-primary">Criar Primeira Votação</a>
+  </div>
+
+  <div *ngIf="!loading && questionarios.length > 0" class="questionarios-grid">
+    <div *ngFor="let q of questionarios" class="questionario-card card">
+      <div class="card-header-row">
+        <h3>{{ q.titulo }}</h3>
+        <span *ngIf="q.status === 'Ativo'" class="badge badge-success">Ativo</span>
+        <span *ngIf="q.status !== 'Ativo'" class="badge badge-danger">Encerrado</span>
+      </div>
+      
+      <p class="card-description">{{ q.descricao }}</p>
+      
+      <div class="card-stats">
+        <div class="stat-item">
+          <span class="stat-label">Perguntas</span>
+          <span class="stat-value">{{ q.totalPerguntas || 0 }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Criado em</span>
+          <span class="stat-value">{{ q.dataInicio | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <a [routerLink]="['/resultados', q.id]" class="btn btn-secondary btn-sm">Resultados</a>
+        <button *ngIf="q.status === 'Ativo'" (click)="encerrarQuestionario(q.id)" class="btn btn-outline btn-sm">Encerrar</button>
+        <button (click)="deletarQuestionario(q.id)" class="btn btn-danger btn-sm">Deletar</button>
+      </div>
+    </div>
+  </div>
+</div>

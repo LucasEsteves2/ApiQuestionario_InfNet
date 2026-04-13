@@ -1,0 +1,456 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* ========================================
+   VARIÁVEIS GLOBAIS - FLUMINENSE FC
+   ======================================== */
+:root {
+  /* Cores Oficiais do Fluminense */
+  --flu-grana: #8B1538;
+  --flu-grana-light: #a8466b;
+  --flu-grana-lighter: #f5e8ed;
+  --flu-verde: #006D4A;
+  --flu-verde-light: #4a9678;
+  --flu-verde-lighter: #e8f5f1;
+  --flu-branco: #FFFFFF;
+  
+  /* Gradientes Tricolores */
+  --gradient-tricolor: linear-gradient(135deg, #f5e8ed 0%, #e8f5f1 50%, #f5e8ed 100%);
+  --gradient-tricolor-vertical: linear-gradient(180deg, #f5e8ed 0%, #ffffff 50%, #e8f5f1 100%);
+  --gradient-grana: linear-gradient(135deg, var(--flu-grana) 0%, #6B0F29 100%);
+  --gradient-verde: linear-gradient(135deg, var(--flu-verde) 0%, #004D33 100%);
+  --gradient-grana-subtle: linear-gradient(135deg, #fef9fa 0%, #f5e8ed 100%);
+  --gradient-verde-subtle: linear-gradient(135deg, #f7fcfa 0%, #e8f5f1 100%);
+  
+  /* Cores de Apoio */
+  --bg-light: #fafbfc;
+  --bg-subtle: #f8f9fa;
+  --text-dark: #2d3436;
+  --text-medium: #636e72;
+  --text-light: #b2bec3;
+  --border-light: #e1e8ed;
+  --border-grana: rgba(139, 21, 56, 0.15);
+  --border-verde: rgba(0, 109, 74, 0.15);
+  
+  /* Sombras Suaves */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-grana: 0 4px 12px rgba(139, 21, 56, 0.15);
+  --shadow-verde: 0 4px 12px rgba(0, 109, 74, 0.15);
+  
+  /* Transições */
+  --transition: all 0.2s ease;
+  
+  /* Tipografia */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+}
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  background: var(--gradient-tricolor-vertical);
+  color: var(--text-dark);
+  line-height: 1.6;
+  font-size: var(--font-size-base);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ========================================
+   TIPOGRAFIA CLEAN
+   ======================================== */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-dark);
+}
+
+h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: var(--font-size-2xl);
+  margin-bottom: 0.875rem;
+}
+
+h3 {
+  font-size: var(--font-size-xl);
+  margin-bottom: 0.75rem;
+}
+
+h4 {
+  font-size: var(--font-size-lg);
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 1rem;
+  color: var(--text-medium);
+}
+
+/* ========================================
+   BOTÕES CLEAN
+   ======================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: var(--flu-grana);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--flu-grana-light);
+  box-shadow: var(--shadow-grana);
+}
+
+.btn-secondary {
+  background: var(--flu-verde);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: var(--flu-verde-light);
+  box-shadow: var(--shadow-verde);
+}
+
+.btn-outline {
+  background: white;
+  border: 2px solid var(--flu-grana);
+  color: var(--flu-grana);
+}
+
+.btn-outline:hover {
+  background: var(--flu-grana);
+  color: white;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-xs);
+}
+
+.btn-lg {
+  padding: 0.875rem 1.75rem;
+  font-size: var(--font-size-base);
+}
+
+/* ========================================
+   CARDS CLEAN COM TOQUE DE COR
+   ======================================== */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid var(--border-light);
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--flu-grana) 0%, var(--flu-verde) 100%);
+  border-radius: 12px 12px 0 0;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--border-grana);
+}
+
+/* ========================================
+   BADGES CLEAN
+   ======================================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-success {
+  background: var(--flu-verde-lighter);
+  color: var(--flu-verde);
+  border: 1px solid var(--border-verde);
+}
+
+.badge-danger {
+  background: var(--flu-grana-lighter);
+  color: var(--flu-grana);
+  border: 1px solid var(--border-grana);
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+}
+
+/* ========================================
+   LOADING CLEAN
+   ======================================== */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-light);
+  border-top: 3px solid var(--flu-grana);
+  border-right: 3px solid var(--flu-verde);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  min-height: 300px;
+}
+
+.loading p {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-medium);
+}
+
+/* ========================================
+   ALERTS CLEAN
+   ======================================== */
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid;
+  font-size: var(--font-size-sm);
+}
+
+.alert-error {
+  background: var(--flu-grana-lighter);
+  border-color: var(--flu-grana);
+  color: #721c24;
+}
+
+.alert-success {
+  background: var(--flu-verde-lighter);
+  border-color: var(--flu-verde);
+  color: #155724;
+}
+
+.alert-info {
+  background: #d1ecf1;
+  border-color: #17a2b8;
+  color: #0c5460;
+}
+
+/* ========================================
+   CONTAINER
+   ======================================== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ========================================
+   FORMS CLEAN
+   ======================================== */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: var(--font-size-sm);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-size: var(--font-size-sm);
+  transition: var(--transition);
+  background: white;
+  font-family: var(--font-primary);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--flu-grana);
+  box-shadow: 0 0 0 3px rgba(139, 21, 56, 0.1);
+}
+
+/* ========================================
+   LINKS
+   ======================================== */
+a {
+  color: var(--flu-grana);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--flu-verde);
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h2 {
+  font-size: var(--font-size-xl);
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.empty-state p {
+  font-size: var(--font-size-sm);
+  color: var(--text-medium);
+  margin-bottom: 1.5rem;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 768px) {
+  :root {
+    --font-size-3xl: 1.5rem;
+    --font-size-2xl: 1.25rem;
+    --font-size-xl: 1.125rem;
+  }
+  
+  .container {
+    padding: 1rem;
+  }
+  
+  .card {
+    padding: 1.25rem;
+  }
+}
+
+/* ========================================
+   ANIMAÇÕES SUAVES
+   ======================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* ========================================
+   SEÇÕES ALTERNADAS TRICOLORES
+   ======================================== */
+.section-grana {
+  background: var(--gradient-grana-subtle);
+}
+
+.section-verde {
+  background: var(--gradient-verde-subtle);
+}
+
+.section-white {
+  background: white;
+}
+
+/* ========================================
+   DECORAÇÕES TRICOLORES
+   ======================================== */
+.tricolor-border-top {
+  border-top: 3px solid;
+  border-image: linear-gradient(90deg, var(--flu-grana) 0%, var(--flu-verde) 100%) 1;
+}
+
+.tricolor-border-bottom {
+  border-bottom: 3px solid;
+  border-image: linear-gradient(90deg, var(--flu-grana) 0%, var(--flu-verde) 100%) 1;
+}

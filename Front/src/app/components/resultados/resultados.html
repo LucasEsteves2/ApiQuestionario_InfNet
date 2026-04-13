@@ -1,0 +1,90 @@
+<div class="resultados-container">
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Carregando resultados...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error-card">
+    <div class="error-anim">😕</div>
+    <h1>{{ error }}</h1>
+    <a routerLink="/admin" class="btn btn-primary">Voltar ao Dashboard</a>
+  </div>
+
+  <div *ngIf="!loading && !error && resultados">
+    <!-- Header -->
+    <div class="res-header">
+      <div class="res-header-content">
+        <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="res-escudo">
+        <div class="res-header-info">
+          <h1>{{ resultados.titulo }}</h1>
+          <div class="res-stats">
+            <div class="res-stat">
+              <span class="res-stat-value">{{ resultados.totalRespostas }}</span>
+              <span class="res-stat-label">Votos</span>
+            </div>
+            <div class="res-stat-divider"></div>
+            <div class="res-stat">
+              <span class="res-stat-value">{{ resultados.perguntas?.length || 0 }}</span>
+              <span class="res-stat-label">Perguntas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <a routerLink="/admin" class="btn btn-ghost-white">Voltar</a>
+    </div>
+
+    <!-- Tricolor divider -->
+    <div class="res-divider">
+      <span></span><span></span><span></span>
+    </div>
+
+    <!-- Perguntas -->
+    <div class="perguntas-grid">
+      <div *ngFor="let pergunta of resultados.perguntas; let pi = index"
+           class="pergunta-card"
+           [style.animation-delay]="pi * 0.1 + 's'">
+        <div class="pergunta-top">
+          <h2>{{ pergunta.texto }}</h2>
+          <span class="badge badge-verde">{{ getTotalVotosPergunta(pergunta) }} votos</span>
+        </div>
+
+        <div class="opcoes-list">
+          <div *ngFor="let opcao of pergunta.opcoes; let i = index"
+               class="opcao-row"
+               [class.vencedor]="isVencedor(opcao, pergunta.opcoes)">
+
+            <div class="opcao-rank">
+              <span class="rank-num">{{ i + 1 }}º</span>
+            </div>
+
+            <div class="opcao-body">
+              <div class="opcao-label">
+                <span class="opcao-texto">{{ opcao.texto }}</span>
+                <span *ngIf="isVencedor(opcao, pergunta.opcoes)" class="vencedor-tag">🏆</span>
+              </div>
+
+              <div class="barra-container">
+                <div class="barra-track">
+                  <div class="barra-fill" [style.width.%]="opcao.percentual"></div>
+                </div>
+                <span class="barra-percent">{{ opcao.percentual.toFixed(1) }}%</span>
+              </div>
+
+              <span class="opcao-votos">{{ opcao.quantidade }} voto{{ opcao.quantidade !== 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="resultados.totalRespostas === 0" class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h2>Aguardando Votos</h2>
+      <p>Os resultados aparecerão aqui quando houver votos registrados.</p>
+      <a routerLink="/admin" class="btn btn-primary">Voltar ao Dashboard</a>
+    </div>
+  </div>
+</div>

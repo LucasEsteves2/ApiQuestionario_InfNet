@@ -1,0 +1,66 @@
+<div class="auth-page">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="auth-escudo">
+      <h2>Junte-se ao Tricolor!</h2>
+      <p>Crie sua conta de administrador para gerenciar as votações do clube.</p>
+      <div class="auth-tricolor">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Registrar Admin</h1>
+        <p>Crie sua conta de administrador</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="auth-form">
+        @if (error) {
+          <div class="alert alert-error">{{ error }}</div>
+        }
+        @if (success) {
+          <div class="alert alert-success">{{ success }}</div>
+        }
+
+        <div class="form-group">
+          <label for="nome">Nome Completo</label>
+          <input type="text" id="nome" name="nome" [(ngModel)]="nome"
+            class="form-control" placeholder="Seu nome completo" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" [(ngModel)]="email"
+            class="form-control" placeholder="seu&#64;email.com" required />
+        </div>
+
+        <div class="form-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" name="senha" [(ngModel)]="senha"
+            class="form-control" placeholder="Mínimo 6 caracteres" required />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmarSenha">Confirmar Senha</label>
+          <input type="password" id="confirmarSenha" name="confirmarSenha" [(ngModel)]="confirmarSenha"
+            class="form-control" placeholder="Digite a senha novamente" required />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" [disabled]="loading">
+          @if (loading) {
+            <span>Cadastrando...</span>
+          } @else {
+            <span>Criar Conta</span>
+          }
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Já tem uma conta?</p>
+        <a routerLink="/login" class="link-grana">Fazer Login</a>
+      </div>
+    </div>
+  </div>
+</div>

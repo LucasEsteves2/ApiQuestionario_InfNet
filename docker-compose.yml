@@ -1,6 +1,21 @@
-version: '3.8'
+﻿version: '3.8'
 
 services:
+  mongodb:
+    image: mongo:7
+    container_name: questionario-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    networks:
+      - questionario-network
+
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: questionario-rabbitmq
@@ -56,7 +71,37 @@ services:
   #   networks:
   #     - questionario-network
 
+  backend:
+    build:
+      context: ./Back
+      dockerfile: QuestionarioOnline/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017
+      - MongoDB__DatabaseName=${MONGO_DATABASE}
+      - RabbitMQ__HostName=rabbitmq
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - questionario-network
+
+  frontend:
+    build:
+      context: ./Front
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - questionario-network
+
 volumes:
+  mongodb_data:
+    driver: local
   rabbitmq_data:
     driver: local
   rabbitmq_logs:

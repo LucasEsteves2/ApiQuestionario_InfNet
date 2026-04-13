@@ -54,3 +54,8 @@ coverage.cobertura.xml
 # Publish
 # ============================
 publish/
+
+# ============================
+# Variaveis de ambiente (secrets)
+# ============================
+.env

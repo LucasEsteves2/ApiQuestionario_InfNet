@@ -1,0 +1,60 @@
+<div class="votacoes-container">
+  <!-- Header -->
+  <div class="votacoes-header">
+    <div class="header-bg-pattern"></div>
+    <div class="header-content">
+      <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="header-escudo">
+      <div class="header-text">
+        <h1>Votações Disponíveis</h1>
+        <p>Escolha uma votação para fazer sua voz ser ouvida</p>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Carregando votações...</p>
+    </div>
+  } @else if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  } @else if (questionarios.length === 0) {
+    <div class="empty-state card">
+      <div class="empty-icon">🗳️</div>
+      <h2>Nenhuma votação ativa no momento</h2>
+      <p>Volte mais tarde para participar das votações do Fluminense!</p>
+      <a routerLink="/" class="btn btn-primary">Voltar para Início</a>
+    </div>
+  } @else {
+    <div class="questionarios-grid">
+      @for (q of questionarios; track q.id; let i = $index) {
+        <div class="votacao-card" [style.animation-delay.ms]="i * 80">
+          <div class="votacao-card-accent"></div>
+          <div class="votacao-card-body">
+            <div class="votacao-card-header">
+              <h3>{{ q.titulo }}</h3>
+              <span class="badge badge-success">Ativa</span>
+            </div>
+            
+            <p class="votacao-descricao">{{ q.descricao }}</p>
+            
+            <div class="votacao-info">
+              <div class="info-item">
+                <span class="info-label">Perguntas</span>
+                <span class="info-value">{{ q.totalPerguntas || 0 }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Encerra em</span>
+                <span class="info-value">{{ q.dataFim | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+
+            <a [routerLink]="['/votar', q.id]" class="btn btn-primary btn-block">
+              Votar Agora →
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

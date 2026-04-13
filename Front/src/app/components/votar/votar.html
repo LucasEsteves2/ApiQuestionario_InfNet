@@ -1,0 +1,73 @@
+<div class="votar-container">
+  @if (loading) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>⚽ Carregando votação...</p>
+    </div>
+  } @else if (success) {
+    <div class="success-card">
+      <div class="success-anim">✅</div>
+      <h1>Voto Registrado!</h1>
+      <p>Seu voto foi recebido e será processado em breve.</p>
+      <p class="redirect-text">Redirecionando em 3 segundos...</p>
+      <div class="success-tricolor"><span></span><span></span><span></span></div>
+    </div>
+  } @else if (error && !questionario) {
+    <div class="error-card">
+      <div class="error-anim">❌</div>
+      <h1>{{ error }}</h1>
+      <a routerLink="/" class="btn btn-primary">Voltar para Início</a>
+    </div>
+  } @else {
+    <div class="votar-header">
+      <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="votar-escudo">
+      <h1>{{ questionario.titulo }}</h1>
+      <p class="descricao">{{ questionario.descricao }}</p>
+      <div class="votar-divider"><span></span><span></span><span></span></div>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="votar-form">
+      @if (error) {
+        <div class="alert alert-error">{{ error }}</div>
+      }
+
+      @for (pergunta of questionario.perguntas; track pergunta.id; let i = $index) {
+        <div class="pergunta-card" [style.animation-delay.ms]="i * 100">
+          <div class="pergunta-numero">{{ i + 1 }}</div>
+          <h3 class="pergunta-titulo">
+            {{ pergunta.texto }}
+            @if (pergunta.obrigatoria) {
+              <span class="obrigatoria">*</span>
+            }
+          </h3>
+
+          <div class="opcoes-list">
+            @for (opcao of pergunta.opcoes; track opcao.id) {
+              <label class="opcao-radio">
+                <input 
+                  type="radio" 
+                  [name]="'pergunta' + i"
+                  [value]="opcao.id"
+                  [(ngModel)]="respostas[pergunta.id]"
+                  required>
+                <span class="opcao-check"></span>
+                <span class="opcao-texto">{{ opcao.texto }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <a routerLink="/" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-primary btn-lg" [disabled]="enviando">
+          @if (enviando) {
+            <span>Enviando...</span>
+          } @else {
+            <span>Confirmar Voto ✓</span>
+          }
+        </button>
+      </div>
+    </form>
+  }
+</div>

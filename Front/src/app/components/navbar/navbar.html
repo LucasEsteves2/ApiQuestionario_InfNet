@@ -1,0 +1,26 @@
+<div class="navbar-tricolor-strip"></div>
+<nav class="navbar">
+  <div class="navbar-container">
+    <a routerLink="/" class="navbar-brand">
+      <div class="escudo-wrapper">
+        <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="escudo-navbar">
+      </div>
+      <div class="brand-info">
+        <span class="brand-text">Fluminense FC</span>
+        <span class="brand-subtitle">Sistema de Votação</span>
+      </div>
+    </a>
+
+    <div class="navbar-links">
+      <a routerLink="/" class="nav-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Início</a>
+      <a routerLink="/votar-publico" class="nav-link" routerLinkActive="active">Votações</a>
+    </div>
+
+    <div class="navbar-actions">
+      <a routerLink="/login" class="btn-nav">
+        <span class="btn-nav-icon">👤</span>
+        Área Admin
+      </a>
+    </div>
+  </div>
+</nav>

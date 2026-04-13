@@ -1,0 +1,78 @@
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-content">
+    <div class="escudo-container">
+      <img src="Fluminense_FC_escudo.png" alt="Fluminense FC" class="escudo-oficial">
+      <div class="escudo-ring"></div>
+    </div>
+    <h1 class="hero-title">Sistema de Votação</h1>
+    <div class="hero-divider">
+      <span class="divider-grana"></span>
+      <span class="divider-branco"></span>
+      <span class="divider-verde"></span>
+    </div>
+    <p class="hero-subtitle">Fluminense Football Club</p>
+    <p class="hero-description">
+      Participe das decisões do clube através de votações seguras e transparentes
+    </p>
+    
+    <div class="hero-actions">
+      <a routerLink="/votar-publico" class="btn-hero-primary">
+        <span>Votar Agora</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <a routerLink="/login" class="btn-hero-secondary">Área Administrativa</a>
+    </div>
+  </div>
+
+  <!-- Floating decorative elements -->
+  <div class="hero-float hero-float-1">⚽</div>
+  <div class="hero-float hero-float-2">🏆</div>
+  <div class="hero-float hero-float-3">⚽</div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-title">
+      <span class="section-tag">Sobre o Sistema</span>
+      <h2>Por que votar conosco?</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrapper feature-icon-grana">
+          <span>🗳️</span>
+        </div>
+        <h3>Votação Segura</h3>
+        <p>Sistema com autenticação JWT e processamento assíncrono via RabbitMQ</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon-wrapper feature-icon-verde">
+          <span>📊</span>
+        </div>
+        <h3>Resultados em Tempo Real</h3>
+        <p>Acompanhe os resultados conforme os votos são processados pela fila</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon-wrapper feature-icon-dourado">
+          <span>🏆</span>
+        </div>
+        <h3>Transparência Total</h3>
+        <p>Desenvolvido com as melhores práticas de arquitetura e segurança</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-content">
+    <div class="cta-tricolor"></div>
+    <h2>Pronto para participar?</h2>
+    <p>Faça sua voz ser ouvida nas decisões do Tricolor</p>
+    <a routerLink="/votar-publico" class="btn btn-lg btn-primary">Ver Votações Abertas</a>
+  </div>
+</section>

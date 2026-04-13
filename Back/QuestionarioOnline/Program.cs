@@ -1,0 +1,142 @@
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using QuestionarioOnline.Api.GraphQL;
+using QuestionarioOnline.Api.GraphQL.Mutations;
+using QuestionarioOnline.Api.GraphQL.Queries;
+using QuestionarioOnline.Application.Interfaces;
+using QuestionarioOnline.CrossCutting.DependencyInjection;
+using QuestionarioOnline.Infrastructure.Authentication;
+using QuestionarioOnline.Infrastructure.Persistence;
+using System.Text;
+using GraphQL;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddQuestionarioOnlineServices(connectionString, builder.Configuration);
+
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
+    ?? throw new InvalidOperationException("JWT Settings not found.");
+builder.Services.AddSingleton(jwtSettings);
+
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtSettings.SecretKey)
+        ),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new()
+    {
+        Title = "Sistema de Questionários Online",
+        Version = "v1.0",
+        Description = @"API RESTful para criação, gerenciamento e coleta de respostas de questionários com processamento assíncrono de alto volume.
+
+**Projeto Acadêmico**
+- Pós-Graduação em Arquitetura de Software - Instituto Infnet
+- Autor: Lucas Esteves
+- Tecnologias: .NET 8, Clean Architecture, DDD, RabbitMQ
+",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "Lucas Esteves",
+            Email = "lucas.esteves@infnet.edu.br",
+            Url = new Uri("https://github.com/LucasEsteves2/QuestionarioOnline_Ifnet")
+        },
+
+    });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "JWT Authorization header usando Bearer scheme. Exemplo: 'Bearer {token}'"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+//grapichQL
+
+builder.Services.AddScoped<QuestionarioSchema>();
+builder.Services.AddScoped<QuestionarioQuery>();
+builder.Services.AddScoped<QuestionarioMutation>();
+builder.Services.AddGraphQL(otpions => otpions.AddGraphTypes().AddSystemTextJson());
+
+
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseCors("AllowAll");
+app.UseGraphQL<QuestionarioSchema>("/graphql");
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+// Seed de dados iniciais (só insere se o banco estiver vazio)
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+    await seeder.SeedAsync();
+}
+
+app.Run();
