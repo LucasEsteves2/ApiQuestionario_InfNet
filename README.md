@@ -34,97 +34,139 @@ Uma startup precisa de um sistema de questionários online para pesquisas públi
 
 ### **Pré-requisitos**
 
-- ✅ **.NET 8 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
 - ✅ **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop/)
-- ✅ **Visual Studio 2022** ou **VS Code**
-- ✅ **SQL Server LocalDB** (já incluído no Visual Studio)
+
+> Apenas o Docker é necessário! Todos os serviços (API, Frontend, MongoDB, RabbitMQ) sobem automaticamente via Docker Compose.
+
 ---
 
 ### **📁 1. Clone o Repositório**
 
 ```bash
-git clone https://github.com/LucasEsteves2/QuestionarioOnline_Ifnet.git
-cd QuestionarioOnline
+git clone https://github.com/LucasEsteves2/ApiQuestionario_InfNet.git
+cd ApiQuestionario_InfNet
 ```
 
 ---
 
-### **🐳 2. Iniciar RabbitMQ (Docker Compose)**
+### **⚙️ 2. Configurar Variáveis de Ambiente**
 
-O projeto usa **RabbitMQ** como message broker para processamento assíncrono de respostas.
+Crie um arquivo **`.env`** na raiz do projeto baseado no `.env.example`:
 
-**Na raiz do projeto, execute:**
-
-```powershell
-docker-compose up -d
+```bash
+cp .env.example .env
 ```
 
+Conteúdo do `.env`:
 
-**Verificar status:**
+```env
+# --- MongoDB ---
+MONGO_INITDB_ROOT_USERNAME=mongoadmin
+MONGO_INITDB_ROOT_PASSWORD=mongosecret123
+MONGO_DATABASE=QuestionarioOnlineDb
 
-```powershell
-docker ps | findstr rabbitmq
+# --- RabbitMQ ---
+RABBITMQ_DEFAULT_USER=admin
+RABBITMQ_DEFAULT_PASS=admin123
+RABBITMQ_DEFAULT_VHOST=/
+
+# --- JWT ---
+JWT_SECRET_KEY=SuaChaveSecretaSuperSeguraComPeloMenos256BitsParaGarantirSegurancaMaxima!
+JWT_ISSUER=QuestionarioOnline
+JWT_AUDIENCE=QuestionarioOnlineAPI
+JWT_EXPIRATION_MINUTES=60
+
+# --- ASP.NET ---
+ASPNETCORE_ENVIRONMENT=Development
 ```
-
-**URLs disponíveis:**
-- **RabbitMQ Management UI**: http://localhost:15672
-  - Usuário: `admin`
-  - Senha: `admin123`
-- **AMQP Protocol**: `amqp://localhost:5672`
 
 ---
 
-### **💾 3. Configurar Banco de Dados (LocalDB)**
+### **🐳 3. Subir com Docker Compose**
 
-O projeto usa **SQL Server LocalDB** para desenvolvimento local (já vem com Visual Studio).
+Na raiz do projeto, execute:
 
-**Connection String (já configurada em `appsettings.json`):**
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=QuestionarioOnlineDb;Trusted_Connection=True;MultipleActiveResultSets=true"
-  }
-}
+```bash
+docker-compose up --build
 ```
 
-✅ **Migrations rodam automaticamente** na primeira execução!
+O Docker vai subir automaticamente **4 serviços**:
 
-
----
-### **🚀 4. Executar a Aplicação**
-
-1. Abra a solution `QuestionarioOnline.sln` no **Visual Studio**
-2. Configure **Multiple Startup Projects**:
-   - `QuestionarioOnline.Api` → **Start**
-   - `QuestionarioOnline.Workers.Function` → **Start**
-
-   <p align="center">
-     <img src="https://github.com/user-attachments/assets/2306cf89-9338-4ed0-9970-33336eabb88f" width="70%" />
-   </p>
-
-**Com a aplicação em execução:**
-- API REST disponível em `https://localhost:7001`
-- Processamento assíncrono ativo via Azure Functions
-- Swagger acessível em `https://localhost:7001/swagger`
+| Serviço | Descrição | Porta |
+|---------|-----------|-------|
+| **MongoDB** | Banco de dados NoSQL | `27017` |
+| **RabbitMQ** | Message broker (fila de mensagens) | `5672` / UI: `15672` |
+| **Backend** | API .NET 8 | `5000` |
+| **Frontend** | Angular (Nginx) | `4200` |
 
 ---
 
+### **✅ 4. Verificar se tudo subiu**
+
+```bash
+docker ps
+```
+
+Todos os containers devem estar com status `Up`.
+
+---
+
+### **🌐 5. Acessar a Aplicação**
+
+| Recurso | URL |
+|---------|-----|
+| **Frontend** | http://localhost:4200 |
+| **API (Swagger)** | http://localhost:5000/swagger |
+| **RabbitMQ Management** | http://localhost:15672 (admin / admin123) |
+
+---
+
+### **👤 6. Usuários Pré-cadastrados (Seed)**
+
+O sistema cria automaticamente os seguintes usuários na primeira execução:
+
+| Usuário | Email | Senha | Role |
+|---------|-------|-------|------|
+| Administrador | `admin@questionario.com` | `Admin@123` | Admin |
+| Analista Exemplo | `analista@questionario.com` | `Analista@123` | Analista |
+
+---
+
+### **🛑 Parar a aplicação**
+
+```bash
+docker-compose down
+```
+
+Para parar **e apagar os dados do banco**:
+
+```bash
+docker-compose down -v
+```
+
+---
+
+### **🐳 Docker Hub (Imagens Prontas)**
+
+As imagens também estão disponíveis no Docker Hub:
+
+- [`luqui25/lucas-fluminense-backend`](https://hub.docker.com/r/luqui25/lucas-fluminense-backend)
+- [`luqui25/lucas-fluminense-frontend`](https://hub.docker.com/r/luqui25/lucas-fluminense-frontend)
+
+---
 
 ### 🧪 Testes
 
 A aplicação pode ser testada das seguintes formas:
 
-**1) API (Postman)**  
+**1) Interface Web (Frontend)**
+Acesse http://localhost:4200 após subir o Docker Compose.
+
+**2) API (Swagger)**
+Acesse http://localhost:5000/swagger para testar os endpoints diretamente.
+
+**3) API (Postman)**
 Importe a collection `Api Questionario - LucasEsteves.postman_collection` disponível na raiz do projeto.
-
-**2) Interface Web (Frontend)**  
-Clone o repositório do frontend:
-https://github.com/LucasEsteves2/FLuminense_Front
-
-```bash
-git clone https://github.com/LucasEsteves2/FLuminense_Front.git
-```
 ---
 ## ✨ **Funcionalidades e Endpoints**
 
