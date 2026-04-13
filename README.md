@@ -57,31 +57,6 @@ Crie um arquivo **`.env`** na raiz do projeto baseado no `.env.example`:
 cp .env.example .env
 ```
 
-Conteúdo do `.env`:
-
-```env
-# --- MongoDB ---
-MONGO_INITDB_ROOT_USERNAME=mongoadmin
-MONGO_INITDB_ROOT_PASSWORD=mongosecret123
-MONGO_DATABASE=QuestionarioOnlineDb
-
-# --- RabbitMQ ---
-RABBITMQ_DEFAULT_USER=admin
-RABBITMQ_DEFAULT_PASS=admin123
-RABBITMQ_DEFAULT_VHOST=/
-
-# --- JWT ---
-JWT_SECRET_KEY=SuaChaveSecretaSuperSeguraComPeloMenos256BitsParaGarantirSegurancaMaxima!
-JWT_ISSUER=QuestionarioOnline
-JWT_AUDIENCE=QuestionarioOnlineAPI
-JWT_EXPIRATION_MINUTES=60
-
-# --- ASP.NET ---
-ASPNETCORE_ENVIRONMENT=Development
-```
-
----
-
 ### **🐳 3. Subir com Docker Compose**
 
 Na raiz do projeto, execute:
@@ -154,73 +129,6 @@ As imagens também estão disponíveis no Docker Hub:
 - [`luqui25/lucas-fluminense-frontend`](https://hub.docker.com/r/luqui25/lucas-fluminense-frontend)
 
 ---
-
-### 🧪 Testes
-
-A aplicação pode ser testada das seguintes formas:
-
-**1) Interface Web (Frontend)**
-Acesse http://localhost:4200 após subir o Docker Compose.
-
-**2) API (Swagger)**
-Acesse http://localhost:5000/swagger para testar os endpoints diretamente.
-
-**3) API (Postman)**
-Importe a collection `Api Questionario - LucasEsteves.postman_collection` disponível na raiz do projeto.
----
-## ✨ **Funcionalidades e Endpoints**
-
-### **Sistema de Permissões (Roles)**
-
-O sistema implementa **controle de acesso baseado em papéis (RBAC)** com 3 níveis:
-
-| Role | Permissões | Caso de Uso |
-|------|-----------|-------------|
-| **Analista** | Criar questionários, ver seus próprios resultados | Usuário padrão da startup |
-| **Admin** | CRUD completo de questionários, ver TODOS os resultados | Gestor da startup |
-| **Visualizador** | Ver resultados de TODOS os questionários (somente leitura) | Stakeholders, investidores |
-
-**Regras de Negócio:**
-- ✅ **Analista**: Apenas vê resultados dos questionários que ele **criou**
-- ✅ **Admin**: Acesso total ao sistema (CRUD + resultados de todos)
-- ✅ **Visualizador**: Vê resultados de qualquer questionário (somente leitura)
-- ✅ **Role padrão**: Novos usuários são cadastrados como `Analista`
-
----
-
-### **🔐 Autenticação**
-
-| Método | Endpoint | Descrição | Autenticação |
-|--------|----------|-----------|--------------|
-| `POST` | `/api/auth/register` | Cadastrar novo usuário | ❌ Público |
-| `POST` | `/api/auth/login` | Login com email/senha → Retorna JWT | ❌ Público |
-
----
-
-### **📋 Questionários**
-
-| Método | Endpoint | Descrição | Autenticação | Roles |
-|--------|----------|-----------|--------------|-------|
-| `POST` | `/api/questionario` | Criar questionário | ✅ JWT | **Admin** |
-| `GET` | `/api/questionario` | Listar todos os questionários | ✅ JWT | Todos |
-| `GET` | `/api/questionario/{id}` | Obter questionário por ID | ✅ JWT | Todos |
-| `GET` | `/api/questionario/{id}/resultados` | Obter resultados (agregados) | ✅ JWT | Admin, Analista*, Visualizador |
-| `PATCH` | `/api/questionario/{id}/encerrar` | Encerrar questionário | ✅ JWT | **Admin** |
-| `DELETE` | `/api/questionario/{id}` | Deletar questionário | ✅ JWT | **Admin** |
-
-**\*** Analista: Apenas resultados dos questionários que ele criou
-
----
-
-### **💬 Respostas**
-
-| Método | Endpoint | Descrição | Autenticação | Roles |
-|--------|----------|-----------|--------------|-------|
-| `POST` | `/api/resposta` | Registrar resposta (enfileira para processamento) | ✅ JWT | Todos |
-| `GET` | `/api/resposta/questionario/{questionarioId}` | Listar respostas de um questionário | ✅ JWT | Admin, Visualizador |
-
----
-
 
 
 ## 🏗️ **Arquitetura**
