@@ -157,19 +157,17 @@ docker --version
 ### **Iniciar Cluster**
 
 ```bash
-# Inicia Minikube com recursos adequados
-minikube start --cpus=4 --memory=8192 --disk-size=20g
+# Inicia Minikube 
+minikube start 
 
 # Verifica status
 minikube status
-kubectl cluster-info
 ```
 
 ---
 
 ## 🚀 **Deploy da Aplicação**
 
-### **Opção 1: Deploy Rápido (RECOMENDADO)**
 
 ```bash
 # 1. Vai para a pasta k8s
@@ -197,40 +195,6 @@ kubectl get all -n questionario
 
 ---
 
-### **Opção 2: Deploy Passo a Passo (para aprender)**
-
-```bash
-cd k8s
-
-# 1️⃣ INFRAESTRUTURA
-kubectl apply -f base/namespace.yaml
-kubectl apply -f base/secrets.yaml
-
-# 2️⃣ BANCOS DE DADOS
-kubectl apply -f base/database/mongodb.yaml
-kubectl apply -f base/database/rabbitmq.yaml
-
-# Aguarda MongoDB ficar pronto
-kubectl wait --for=condition=ready pod -l app=mongodb -n questionario --timeout=120s
-
-# Aguarda RabbitMQ ficar pronto
-kubectl wait --for=condition=ready pod -l app=rabbitmq -n questionario --timeout=180s
-
-# 3️⃣ APLICAÇÃO
-kubectl apply -f base/application/backend.yaml
-kubectl apply -f base/application/frontend.yaml
-
-# Aguarda Backend ficar pronto
-kubectl wait --for=condition=ready pod -l app=backend -n questionario --timeout=120s
-
-# 4️⃣ MONITORAMENTO
-kubectl apply -f base/monitoring/prometheus.yaml
-kubectl apply -f base/monitoring/grafana.yaml
-
-# Aguarda Prometheus e Grafana ficarem prontos
-kubectl wait --for=condition=ready pod -l app=prometheus -n questionario --timeout=120s
-kubectl wait --for=condition=ready pod -l app=grafana -n questionario --timeout=120s
-
 # 5️⃣ VERIFICAÇÃO FINAL
 kubectl get pods -n questionario
 kubectl get services -n questionario
@@ -254,8 +218,27 @@ grafana-xxxxx-aaaaa         1/1     Running   0          1m
 
 ---
 
+
+
+
 ## 🌐 **Acessando a Aplicação**
 
+### **⚠️ IMPORTANTE: Port-Forward Necessário (Windows/Docker)**
+
+Se você está usando **Minikube com Docker no Windows**, é necessário fazer **port-forward** para acessar os serviços localmente.
+
+**Por que isso é necessário?**
+
+O Minikube no Windows com driver Docker cria uma VM isolada. Os serviços NodePort (`:30080`, `:30500`, etc.) ficam acessíveis **dentro da VM**, mas não diretamente no `localhost` do seu PC. O port-forward "conecta" a porta local do seu PC com o serviço dentro do cluster Kubernetes.
+
+---
+
+### **🔧 Configurar Port-Forward (OBRIGATÓRIO)**
+
+Abra **um terminal PowerShell** e execute:
+kubectl port-forward -n questionario service/backend 5000:5000
+
+---
 ### **Obter URLs do Minikube**
 
 ```bash
