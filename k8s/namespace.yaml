@@ -1,0 +1,9 @@
+# ============================================================
+# NAMESPACE - Isola todos os recursos do projeto num "espaço"
+# separado dentro do cluster Kubernetes.
+# Pense como uma "pasta" que agrupa tudo do seu projeto.
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: questionario

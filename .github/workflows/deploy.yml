@@ -1,0 +1,146 @@
+# ============================================================
+# PIPELINE CI/CD — GitHub Actions
+#
+# Este arquivo é lido automaticamente pelo GitHub.
+# Ele roda toda vez que você faz "git push" na branch main.
+#
+# Fluxo:
+#   1. Roda os testes do backend
+#   2. Faz o build das imagens Docker
+#   3. Faz o push pro DockerHub
+#   4. (Opcional) Faz o deploy no Kubernetes (AKS)
+# ============================================================
+
+name: CI/CD Pipeline
+
+# ?? Quando essa pipeline roda? ?????????????????????????????
+on:
+  push:
+    branches:
+      - main          # Roda quando fizer push na main (PRD)
+      - develop       # Roda quando fizer push na develop (DEV)
+  pull_request:
+    branches:
+      - main          # Roda nos PRs pra main (só testes, sem deploy)
+
+# ?? Variáveis globais da pipeline ??????????????????????????
+env:
+  DOCKERHUB_USERNAME: luqui25
+  BACKEND_IMAGE: luqui25/lucas-fluminense-backend
+  FRONTEND_IMAGE: luqui25/lucas-fluminense-frontend
+
+# ?? Jobs (etapas da pipeline) ??????????????????????????????
+jobs:
+
+  # ??????????????????????????????????????????????????????????
+  # JOB 1 — Testes do Backend
+  # Roda os testes automatizados antes de qualquer deploy
+  # ??????????????????????????????????????????????????????????
+  test:
+    name: ?? Testes
+    runs-on: ubuntu-latest     # Roda numa máquina Linux do GitHub
+
+    steps:
+      # 1. Baixa o código do repositório
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # 2. Instala o .NET 8
+      - name: Instalar .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 3. Restaura os pacotes NuGet
+      - name: Restaurar pacotes
+        run: dotnet restore Back/QuestionarioOnline.sln
+
+      # 4. Compila o projeto
+      - name: Build
+        run: dotnet build Back/QuestionarioOnline.sln --no-restore
+
+      # 5. Roda os testes
+      - name: Rodar testes
+        run: dotnet test Back/QuestionarioOnline.sln --no-build
+
+  # ??????????????????????????????????????????????????????????
+  # JOB 2 — Build e Push das imagens Docker
+  # Só roda se os testes passarem (needs: test)
+  # ??????????????????????????????????????????????????????????
+  build-and-push:
+    name: ?? Build e Push Docker
+    runs-on: ubuntu-latest
+    needs: test                # Espera o job de testes terminar
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Login no DockerHub usando secrets do GitHub
+      # (configurados em: Settings ? Secrets ? Actions)
+      - name: Login no DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Define a tag da imagem baseado na branch
+      # main    ? tag "latest" (produção)
+      # develop ? tag "dev"    (desenvolvimento)
+      - name: Definir tag da imagem
+        id: tag
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "TAG=latest" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=dev" >> $GITHUB_OUTPUT
+          fi
+
+      # Build + Push do Backend
+      - name: Build e Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Back
+          file: ./Back/QuestionarioOnline/Dockerfile
+          push: true
+          tags: ${{ env.BACKEND_IMAGE }}:${{ steps.tag.outputs.TAG }}
+
+      # Build + Push do Frontend
+      - name: Build e Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Front
+          file: ./Front/Dockerfile
+          push: true
+          tags: ${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.TAG }}
+
+  # ??????????????????????????????????????????????????????????
+  # JOB 3 — Deploy no Kubernetes (AKS - Azure)
+  # Só roda na branch main (produção)
+  # ??????????????????????????????????????????????????????????
+  deploy:
+    name: ?? Deploy
+    runs-on: ubuntu-latest
+    needs: build-and-push      # Espera o build terminar
+    if: github.ref == 'refs/heads/main'   # Só na main
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Login na Azure usando secrets do GitHub
+      - name: Login na Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Conecta no cluster AKS
+      - name: Conectar no AKS
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      # Aplica os manifests do Kubernetes
+      - name: Deploy no Kubernetes
+        run: kubectl apply -f k8s/

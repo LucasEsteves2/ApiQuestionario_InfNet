@@ -1,0 +1,89 @@
+# ============================================================
+# BACKEND (.NET 8 API) - Deployment + Service
+# ============================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: questionario
+  labels:
+    app: backend
+spec:
+  replicas: 2                  # 2 instâncias da API (alta disponibilidade!)
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: luqui25/lucas-fluminense-backend:latest   # Sua imagem do DockerHub
+          ports:
+            - containerPort: 8080        # .NET 8 escuta na 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"
+            # Connection string montada com os valores do Secret
+            - name: ConnectionStrings__DefaultConnection
+              value: "mongodb://$(MONGO_USER):$(MONGO_PASS)@mongodb:27017"
+            - name: MONGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: MONGO_INITDB_ROOT_USERNAME
+            - name: MONGO_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: MONGO_INITDB_ROOT_PASSWORD
+            - name: MongoDB__DatabaseName
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: MONGO_DATABASE
+            # RabbitMQ aponta pro Service "rabbitmq" (DNS interno do K8s)
+            - name: RabbitMQ__HostName
+              value: "rabbitmq"
+            - name: RabbitMQ__UserName
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: RABBITMQ_DEFAULT_USER
+            - name: RabbitMQ__Password
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: RABBITMQ_DEFAULT_PASS
+          # Healthcheck - o K8s reinicia o pod se a API travar
+          readinessProbe:
+            httpGet:
+              path: /api/questionario
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/questionario
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+
+---
+
+# --- Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: questionario
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 5000               # Porta exposta pelo Service
+      targetPort: 8080         # Porta do container
+  type: ClusterIP

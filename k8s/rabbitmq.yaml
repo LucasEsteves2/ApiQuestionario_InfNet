@@ -1,0 +1,93 @@
+# ============================================================
+# RABBITMQ - Deployment + Service + PersistentVolumeClaim
+# ============================================================
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-pvc
+  namespace: questionario
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+
+---
+
+# --- Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: questionario
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.13-management-alpine   # Mesma imagem do docker-compose
+          ports:
+            - containerPort: 5672       # AMQP (fila de mensagens)
+            - containerPort: 15672      # UI de gerenciamento
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: RABBITMQ_DEFAULT_USER
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: questionario-secrets
+                  key: RABBITMQ_DEFAULT_PASS
+            - name: RABBITMQ_DEFAULT_VHOST
+              value: "/"
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+          # Healthcheck - verifica se o RabbitMQ está saudável
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "ping"]
+            initialDelaySeconds: 30      # Espera 30s antes de checar
+            periodSeconds: 10            # Checa a cada 10s
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "-q", "ping"]
+            initialDelaySeconds: 40
+            periodSeconds: 30
+      volumes:
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
+
+---
+
+# --- Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: questionario
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: amqp
+      port: 5672              # Porta da fila
+      targetPort: 5672
+    - name: management
+      port: 15672             # Porta da UI
+      targetPort: 15672
+  type: ClusterIP
