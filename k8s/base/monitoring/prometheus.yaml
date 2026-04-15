@@ -1,14 +1,55 @@
 # ============================================================
-# PROMETHEUS - Sistema de Monitoramento e Alertas
-# ============================================================
-# O Prometheus coleta métricas da aplicação (CPU, RAM, requests)
-# e armazena em um banco de dados de séries temporais.
-# O Grafana depois lê esses dados pra criar dashboards visuais.
+# PROMETHEUS - Sistema de Monitoramento com RBAC configurado
 # ============================================================
 
 ---
-# ConfigMap - Configuração do Prometheus
-# Define QUAIS serviços o Prometheus vai monitorar (scrape targets)
+# ServiceAccount - Identidade do Prometheus no Kubernetes
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: questionario
+
+---
+# ClusterRole - Permissoes para coletar metricas do Kubernetes
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/proxy
+  - nodes/metrics
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["extensions"]
+  resources:
+  - ingresses
+  verbs: ["get", "list", "watch"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
+
+---
+# ClusterRoleBinding - Liga ServiceAccount ao ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+- kind: ServiceAccount
+  name: prometheus
+  namespace: questionario
+
+---
+# ConfigMap - Configuracao do Prometheus
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -17,26 +58,16 @@ metadata:
 data:
   prometheus.yml: |
     global:
-      scrape_interval: 15s      # Coleta métricas a cada 15 segundos
-      evaluation_interval: 15s  # Avalia regras a cada 15 segundos
-
+      scrape_interval: 15s
+      evaluation_interval: 15s
     scrape_configs:
-      # Monitora o próprio Prometheus
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']
-
-      # Monitora o Backend (.NET)
       - job_name: 'backend'
-        metrics_path: '/metrics'  # Endpoint de métricas do .NET
+        metrics_path: '/metrics'
         static_configs:
           - targets: ['backend:5000']
-        relabel_configs:
-          - source_labels: [__address__]
-            target_label: instance
-            replacement: 'backend'
-
-      # Monitora pods do Kubernetes
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
           - role: pod
@@ -47,19 +78,9 @@ data:
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
             regex: true
-          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
-            action: replace
-            target_label: __metrics_path__
-            regex: (.+)
-          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
-            action: replace
-            regex: ([^:]+)(?::\d+)?;(\d+)
-            replacement: $1:$2
-            target_label: __address__
 
 ---
 # PersistentVolumeClaim - Armazena dados do Prometheus
-# REQUISITO DO TRABALHO: "Utilize um PVC para escrever os dados do Prometheus"
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -70,7 +91,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi  # 2GB de armazenamento persistente
+      storage: 2Gi
 
 ---
 # Deployment - Pod do Prometheus
@@ -79,10 +100,8 @@ kind: Deployment
 metadata:
   name: prometheus
   namespace: questionario
-  labels:
-    app: prometheus
 spec:
-  replicas: 1  # Prometheus geralmente roda 1 instância
+  replicas: 1
   selector:
     matchLabels:
       app: prometheus
@@ -91,21 +110,21 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: prometheus
       containers:
         - name: prometheus
-          image: prom/prometheus:v2.48.0  # Imagem oficial do Prometheus
+          image: prom/prometheus:v2.48.0
           args:
             - '--config.file=/etc/prometheus/prometheus.yml'
-            - '--storage.tsdb.path=/prometheus'  # Onde salva os dados
-            - '--storage.tsdb.retention.time=7d'  # Mantém dados por 7 dias
+            - '--storage.tsdb.path=/prometheus'
+            - '--storage.tsdb.retention.time=7d'
           ports:
             - containerPort: 9090
-              name: web
           volumeMounts:
             - name: prometheus-config
               mountPath: /etc/prometheus
             - name: prometheus-data
-              mountPath: /prometheus  # Montado no PVC (dados persistem!)
+              mountPath: /prometheus
           resources:
             requests:
               cpu: 200m
@@ -113,7 +132,6 @@ spec:
             limits:
               cpu: 500m
               memory: 1Gi
-          # Healthcheck - Verifica se Prometheus está respondendo
           readinessProbe:
             httpGet:
               path: /-/ready
@@ -132,20 +150,19 @@ spec:
             name: prometheus-config
         - name: prometheus-data
           persistentVolumeClaim:
-            claimName: prometheus-pvc  # Usa o PVC criado acima
+            claimName: prometheus-pvc
 
 ---
-# Service - Expõe Prometheus dentro do cluster
+# Service - Expoe Prometheus (ClusterIP - so interno)
 apiVersion: v1
 kind: Service
 metadata:
   name: prometheus
   namespace: questionario
 spec:
+  type: ClusterIP
   selector:
     app: prometheus
   ports:
     - port: 9090
       targetPort: 9090
-      name: web
-  type: ClusterIP  # Só acessível internamente (Grafana acessa)

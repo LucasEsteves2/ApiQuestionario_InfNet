@@ -13,36 +13,46 @@ metadata:
   name: grafana-datasources
   namespace: questionario
 data:
-  prometheus.yaml: |
+  datasource.yaml: |
     apiVersion: 1
     datasources:
       - name: Prometheus
         type: prometheus
         access: proxy
-        url: http://prometheus:9090  # URL do Prometheus no cluster
+        url: http://prometheus:9090
         isDefault: true
-        editable: true
+        uid: prometheus
 
 ---
 # ConfigMap - Dashboard pré-configurado (Kubernetes)
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: grafana-dashboards
+  name: grafana-dashboard-provider
   namespace: questionario
 data:
-  dashboards.yaml: |
+  provider.yaml: |
     apiVersion: 1
     providers:
-      - name: 'Default'
+      - name: 'default'
         orgId: 1
         folder: ''
         type: file
         disableDeletion: false
-        updateIntervalSeconds: 10
-        allowUiUpdates: true
+        editable: true
         options:
           path: /var/lib/grafana/dashboards
+
+---
+# ConfigMap - Dashboard JSON exemplo
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard
+  namespace: questionario
+data:
+  kubernetes.json: |-
+    {"title":"Questionario Online","uid":"questionario-k8s","tags":["kubernetes"],"timezone":"browser","schemaVersion":38,"refresh":"10s","panels":[{"id":1,"title":"CPU por Pod (%)","type":"timeseries","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":0,"w":12,"h":8},"targets":[{"expr":"sum(rate(container_cpu_usage_seconds_total{namespace=\"questionario\",container!=\"\",container!=\"POD\"}[5m])) by (pod) * 100","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"percent","color":{"mode":"palette-classic"}}}},{"id":2,"title":"Memoria por Pod (MB)","type":"timeseries","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":12,"y":0,"w":12,"h":8},"targets":[{"expr":"sum(container_memory_usage_bytes{namespace=\"questionario\",container!=\"\",container!=\"POD\"}) by (pod) / 1024 / 1024","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"decmbytes","color":{"mode":"palette-classic"}}}},{"id":3,"title":"Replicas do Backend","type":"stat","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":8,"w":6,"h":4},"targets":[{"expr":"count(kube_pod_info{namespace=\"questionario\",pod=~\"backend.*\"})","refId":"A"}],"fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"value":null,"color":"red"},{"value":4,"color":"green"}]},"color":{"mode":"thresholds"}}},"options":{"colorMode":"background","textMode":"auto"}},{"id":4,"title":"Pods Rodando","type":"stat","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":6,"y":8,"w":6,"h":4},"targets":[{"expr":"count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\"})","refId":"A"}],"fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"value":null,"color":"red"},{"value":1,"color":"green"}]},"color":{"mode":"thresholds"}}},"options":{"colorMode":"background","textMode":"auto"}}]}
 
 ---
 # Deployment - Pod do Grafana
@@ -51,8 +61,6 @@ kind: Deployment
 metadata:
   name: grafana
   namespace: questionario
-  labels:
-    app: grafana
 spec:
   replicas: 1
   selector:
@@ -64,54 +72,34 @@ spec:
         app: grafana
     spec:
       containers:
-        - name: grafana
-          image: grafana/grafana:10.2.2  # Imagem oficial do Grafana
-          ports:
-            - containerPort: 3000
-              name: web
-          env:
-            # Credenciais padrão (mude em produção!)
-            - name: GF_SECURITY_ADMIN_USER
-              value: "admin"
-            - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin123"
-            # Permite criação de datasources via API
-            - name: GF_AUTH_ANONYMOUS_ENABLED
-              value: "false"
-            - name: GF_PATHS_PROVISIONING
-              value: "/etc/grafana/provisioning"
-          volumeMounts:
-            - name: grafana-datasources
-              mountPath: /etc/grafana/provisioning/datasources
-            - name: grafana-dashboards-config
-              mountPath: /etc/grafana/provisioning/dashboards
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 300m
-              memory: 512Mi
-          # Healthcheck - Verifica se Grafana está respondendo
-          readinessProbe:
-            httpGet:
-              path: /api/health
-              port: 3000
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /api/health
-              port: 3000
-            initialDelaySeconds: 30
-            periodSeconds: 10
+      - name: grafana
+        image: grafana/grafana:10.2.2
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GF_SECURITY_ADMIN_USER
+          value: admin
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          value: admin123
+        - name: GF_PATHS_PROVISIONING
+          value: /etc/grafana/provisioning
+        volumeMounts:
+        - name: datasources
+          mountPath: /etc/grafana/provisioning/datasources
+        - name: dashboard-provider
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: dashboards
+          mountPath: /var/lib/grafana/dashboards
       volumes:
-        - name: grafana-datasources
-          configMap:
-            name: grafana-datasources
-        - name: grafana-dashboards-config
-          configMap:
-            name: grafana-dashboards
+      - name: datasources
+        configMap:
+          name: grafana-datasources
+      - name: dashboard-provider
+        configMap:
+          name: grafana-dashboard-provider
+      - name: dashboards
+        configMap:
+          name: grafana-dashboard
 
 ---
 # Service - Expõe Grafana FORA do cluster (NodePort)
@@ -122,11 +110,10 @@ metadata:
   name: grafana
   namespace: questionario
 spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30300
   selector:
     app: grafana
-  ports:
-    - port: 3000
-      targetPort: 3000
-      nodePort: 30300  # Acessa em http://<minikube-ip>:30300
-      name: web
-  type: NodePort  # Exposto externamente!
