@@ -174,7 +174,7 @@ minikube status
 cd k8s
 
 # 2. Aplica todos os recursos de uma vez
-kubectl apply -k 
+kubectl apply -k .
 
 # 3. Aguarda tudo ficar pronto (até 5 min)
 kubectl wait --for=condition=ready pod --all -n questionario --timeout=300s
