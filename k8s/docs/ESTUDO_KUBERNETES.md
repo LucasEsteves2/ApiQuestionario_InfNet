@@ -1,3 +1,14 @@
+kubectl delete namespace questionario
+kubectl delete clusterrole prometheus kube-state-metrics
+kubectl delete clusterrolebinding prometheus kube-state-metrics
+kubectl apply -k k8s/
+kubectl wait --for=condition=ready pod --all -n questionario --timeout=300s
+kubectl get pods -n questionario
+
+
+
+
+
 # ?? Estudo Kubernetes — Do Zero ao Deploy
 
 > Anotações baseadas no projeto **Fluminense / QuestionarioOnline**

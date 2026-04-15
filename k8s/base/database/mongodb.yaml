@@ -1,11 +1,3 @@
-# ============================================================
-# MONGODB - Deployment + Service + PersistentVolumeClaim
-# ============================================================
-
-# --- PersistentVolumeClaim ---
-# Pede um "disco" pro Kubernetes guardar os dados do MongoDB.
-# Sem isso, quando o pod reiniciar, todos os dados somem.
-# É o equivalente ao "volumes: mongodb_data:/data/db" do docker-compose.
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -13,41 +5,34 @@ metadata:
   namespace: questionario
 spec:
   accessModes:
-    - ReadWriteOnce        # Só um pod lê/escreve por vez
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi         # Pede 1GB de disco
-
+      storage: 1Gi
 ---
-
-# --- Deployment ---
-# Define QUANTOS pods rodar e COMO configurar cada um.
-# O Deployment gerencia os pods: se um morrer, ele recria automaticamente.
-# É o equivalente ao serviço "mongodb" do docker-compose.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
   namespace: questionario
   labels:
-    app: mongodb             # Label usada pelo Service pra encontrar este pod
+    app: mongodb
 spec:
-  replicas: 1                # Quantas instâncias rodar (1 pro banco)
+  replicas: 1
   selector:
     matchLabels:
-      app: mongodb           # O Deployment gerencia pods com essa label
+      app: mongodb
   template:
     metadata:
       labels:
-        app: mongodb         # Label que identifica o pod
+        app: mongodb
     spec:
       containers:
         - name: mongodb
-          image: mongo:7                    # Mesma imagem do docker-compose
+          image: mongo:7
           ports:
-            - containerPort: 27017         # Porta interna do container
+            - containerPort: 27017
           env:
-            # Puxa os valores do Secret (em vez de hardcoded)
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -65,18 +50,22 @@ spec:
                   key: MONGO_DATABASE
           volumeMounts:
             - name: mongodb-data
-              mountPath: /data/db           # Onde o MongoDB salva os dados
+              mountPath: /data/db
+          readinessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
       volumes:
         - name: mongodb-data
           persistentVolumeClaim:
-            claimName: mongodb-pvc          # Usa o disco que pedimos acima
-
+            claimName: mongodb-pvc
 ---
-
-# --- Service ---
-# Cria um "DNS interno" pro MongoDB dentro do cluster.
-# Outros pods acessam o banco pelo nome "mongodb" (em vez de IP).
-# É o equivalente à "network" do docker-compose.
 apiVersion: v1
 kind: Service
 metadata:
@@ -84,8 +73,8 @@ metadata:
   namespace: questionario
 spec:
   selector:
-    app: mongodb             # Encontra pods com essa label
+    app: mongodb
   ports:
-    - port: 27017            # Porta que o Service expõe
-      targetPort: 27017      # Porta do container
-  type: ClusterIP            # Só acessível DENTRO do cluster (não expõe pra fora)
+    - port: 27017
+      targetPort: 27017
+  type: ClusterIP

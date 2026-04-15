@@ -1,7 +1,3 @@
-# ============================================================
-# FRONTEND (Angular + Nginx) - Deployment + Service
-# ============================================================
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,15 +17,10 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: luqui25/lucas-fluminense-frontend:latest   # Sua imagem do DockerHub
+          image: luqui25/lucas-fluminense-frontend:latest
           ports:
-            - containerPort: 80          # Nginx serve na porta 80
-
+            - containerPort: 80
 ---
-
-# --- Service (NodePort) ---
-# NodePort expõe o serviço FORA do cluster numa porta alta (30000-32767).
-# No Minikube, é assim que você acessa pelo navegador.
 apiVersion: v1
 kind: Service
 metadata:
@@ -39,7 +30,7 @@ spec:
   selector:
     app: frontend
   ports:
-    - port: 80                  # Porta interna do Service
-      targetPort: 80            # Porta do container
-      nodePort: 30080           # Porta que você acessa no navegador
-  type: NodePort                # Expõe pra fora do cluster
+    - port: 80
+      targetPort: 80
+      nodePort: 30080
+  type: NodePort

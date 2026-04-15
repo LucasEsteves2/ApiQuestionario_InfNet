@@ -1,17 +1,9 @@
-# ============================================================
-# PROMETHEUS - Sistema de Monitoramento com RBAC configurado
-# ============================================================
-
----
-# ServiceAccount - Identidade do Prometheus no Kubernetes
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: prometheus
   namespace: questionario
-
 ---
-# ClusterRole - Permissoes para coletar metricas do Kubernetes
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -32,9 +24,7 @@ rules:
   verbs: ["get", "list", "watch"]
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
-
 ---
-# ClusterRoleBinding - Liga ServiceAccount ao ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -47,9 +37,7 @@ subjects:
 - kind: ServiceAccount
   name: prometheus
   namespace: questionario
-
 ---
-# ConfigMap - Configuracao do Prometheus
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -68,6 +56,20 @@ data:
         metrics_path: '/metrics'
         static_configs:
           - targets: ['backend:5000']
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics.kube-system.svc.cluster.local:8080']
+      - job_name: 'kubelet-cadvisor'
+        scheme: https
+        tls_config:
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        metrics_path: /metrics/cadvisor
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
       - job_name: 'kubernetes-pods'
         kubernetes_sd_configs:
           - role: pod
@@ -78,9 +80,7 @@ data:
           - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
             action: keep
             regex: true
-
 ---
-# PersistentVolumeClaim - Armazena dados do Prometheus
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -92,9 +92,7 @@ spec:
   resources:
     requests:
       storage: 2Gi
-
 ---
-# Deployment - Pod do Prometheus
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -125,13 +123,6 @@ spec:
               mountPath: /etc/prometheus
             - name: prometheus-data
               mountPath: /prometheus
-          resources:
-            requests:
-              cpu: 200m
-              memory: 512Mi
-            limits:
-              cpu: 500m
-              memory: 1Gi
           readinessProbe:
             httpGet:
               path: /-/ready
@@ -151,9 +142,7 @@ spec:
         - name: prometheus-data
           persistentVolumeClaim:
             claimName: prometheus-pvc
-
 ---
-# Service - Expoe Prometheus (ClusterIP - so interno)
 apiVersion: v1
 kind: Service
 metadata:

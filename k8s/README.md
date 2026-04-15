@@ -174,7 +174,7 @@ minikube status
 cd k8s
 
 # 2. Aplica todos os recursos de uma vez
-kubectl apply -f deploy.yaml
+kubectl apply -k 
 
 # 3. Aguarda tudo ficar pronto (até 5 min)
 kubectl wait --for=condition=ready pod --all -n questionario --timeout=300s
@@ -190,8 +190,10 @@ kubectl get all -n questionario
 - ✔️ RabbitMQ com PVC (500MB)
 - ✔️ Backend com 4 réplicas
 - ✔️ Frontend Angular
-- ✔️ Prometheus com PVC (2GB)
-- ✔️ Grafana com dashboards
+- ✔️ kube-state-metrics (métricas do Kubernetes)
+- ✔️ Prometheus com PVC (2GB) + RBAC
+- ✔️ Grafana com dashboards pré-configurados
+
 
 ---
 
@@ -217,9 +219,6 @@ grafana-xxxxx-aaaaa         1/1     Running   0          1m
 ```
 
 ---
-
-
-
 
 ## 🌐 **Acessando a Aplicação**
 
@@ -278,46 +277,6 @@ minikube service grafana -n questionario --url
 
 # Acessa no navegador: http://<ip>:30300
 # Login: admin / admin123
-```
-
-### **2. Verificar Conexão com Prometheus**
-
-1. Menu lateral → **⚙️ Configuration** → **Data Sources**
-2. Clica em **Prometheus**
-3. Clica em **Test** no final da página
-4. Deve aparecer: ✅ **Data source is working**
-
-### **3. Criar Dashboard Personalizado**
-
-1. Menu lateral → **+** → **Create Dashboard**
-2. Clica em **Add visualization**
-3. Seleciona **Prometheus** como data source
-
-### **4. Queries Importantes**
-
-#### 📊 **CPU por Pod**
-```promql
-sum(rate(container_cpu_usage_seconds_total{namespace="questionario",container!=""}[5m])) by (pod)
-```
-
-#### 💾 **Memória por Pod (MB)**
-```promql
-sum(container_memory_usage_bytes{namespace="questionario",container!=""}) by (pod) / 1024 / 1024
-```
-
-#### 🔢 **Número de Réplicas do Backend**
-```promql
-count(kube_pod_info{namespace="questionario",pod=~"backend.*"})
-```
-
-#### 🌐 **HTTP Requests por Segundo**
-```promql
-sum(rate(http_requests_total{namespace="questionario"}[5m])) by (path)
-```
-
-#### ⏱️ **Latência de Requisições**
-```promql
-histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{namespace="questionario"}[5m])) by (le))
 ```
 
 ---
