@@ -132,6 +132,9 @@ kubectl port-forward -n questionario service/backend 5000:5000
 
 **⚠️ Deixe esse terminal aberto!** Se fechar, o port-forward para.
 
+
+--Conta de admin padrão para acessar 
+- **adminBack** admin@questionario.com/ Admin@123
 ---
 
 #### **. Acessar o Frontend**
@@ -165,7 +168,7 @@ minikube service rabbitmq -n questionario --url   # RabbitMQ UI
 **Credenciais:**
 - **Grafana:** admin / admin123
 - **RabbitMQ:** admin / admin123
-
+- **adminBack** admin@questionario.com/ Admin@123
 ---
 
 ## 📊 Grafana - Dashboards Pré-configurados

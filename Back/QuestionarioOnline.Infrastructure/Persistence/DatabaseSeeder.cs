@@ -77,104 +77,173 @@ public class DatabaseSeeder
     // ?????????????????????????????????????????????????????????????????????????
     // Question�rios de exemplo
     // ?????????????????????????????????????????????????????????????????????????
-    private async Task SeedQuestionariosAsync(Guid adminId)
-    {
-        var totalExistente = await _context.Questionarios
-            .CountDocumentsAsync(_ => true);
+   private async Task SeedQuestionariosAsync(Guid adminId)
+{
+    var questionarios = new List<Questionario>();
 
-        if (totalExistente > 0)
+    // Questionário 1
+    var torcida = Questionario.Criar(
+        titulo: "Pesquisa da Torcida Tricolor",
+        descricao: "Queremos entender a percepção da torcida sobre o momento do Fluminense, desempenho do time e expectativas para a temporada.",
+        dataInicio: DateTime.UtcNow,
+        dataFim: DateTime.UtcNow.AddDays(30),
+        usuarioId: adminId
+    );
+
+    torcida.AdicionarPergunta(
+        texto: "Como você avalia o desempenho recente do Fluminense em campo?",
+        ordem: 1,
+        obrigatoria: true,
+        opcoes: new[]
         {
-            _logger.LogInformation("??  Question�rios j� existem, pulando.");
-            return;
+            ("Excelente", 1),
+            ("Bom", 2),
+            ("Regular", 3),
+            ("Ruim", 4)
+        }
+    );
+
+    torcida.AdicionarPergunta(
+        texto: "Qual setor do time mais precisa de reforços?",
+        ordem: 2,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Defesa", 1),
+            ("Meio-campo", 2),
+            ("Ataque", 3),
+            ("Banco / elenco", 4)
+        }
+    );
+
+    torcida.AdicionarPergunta(
+        texto: "Você acredita que o clube está competitivo para disputar títulos nesta temporada?",
+        ordem: 3,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Sim, totalmente", 1),
+            ("Tem chances", 2),
+            ("Difícil, mas possível", 3),
+            ("Não", 4)
+        }
+    );
+
+    questionarios.Add(torcida);
+
+    // Questionário 2
+    var saf = Questionario.Criar(
+        titulo: "Opinião da Torcida sobre a SAF",
+        descricao: "Pesquisa sobre a visão do torcedor em relação à SAF, gestão do futebol, investimentos e futuro do Fluminense.",
+        dataInicio: DateTime.UtcNow,
+        dataFim: DateTime.UtcNow.AddDays(45),
+        usuarioId: adminId
+    );
+
+    saf.AdicionarPergunta(
+        texto: "Você é favorável à adoção de um modelo de SAF no Fluminense?",
+        ordem: 1,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Sim", 1),
+            ("Talvez, depende do projeto", 2),
+            ("Não", 3),
+            ("Não tenho opinião formada", 4)
+        }
+    );
+
+    saf.AdicionarPergunta(
+        texto: "Qual seria o principal benefício de uma SAF no clube?",
+        ordem: 2,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Mais investimento no futebol", 1),
+            ("Gestão profissional", 2),
+            ("Redução de dívidas", 3),
+            ("Melhor planejamento de longo prazo", 4)
+        }
+    );
+
+    saf.AdicionarPergunta(
+        texto: "Qual é sua maior preocupação em relação à SAF?",
+        ordem: 3,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Perda de identidade do clube", 1),
+            ("Falta de transparência", 2),
+            ("Controle externo do futebol", 3),
+            ("Promessas sem resultado", 4)
+        }
+    );
+
+    questionarios.Add(saf);
+
+    // Questionário 3
+    var futebol = Questionario.Criar(
+        titulo: "Avaliação do Futebol do Fluminense",
+        descricao: "Pesquisa voltada para analisar elenco, treinador, estilo de jogo e principais dificuldades do time.",
+        dataInicio: DateTime.UtcNow,
+        dataFim: DateTime.UtcNow.AddDays(60),
+        usuarioId: adminId
+    );
+
+    futebol.AdicionarPergunta(
+        texto: "Como você avalia o trabalho da comissão técnica até aqui?",
+        ordem: 1,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Ótimo", 1),
+            ("Bom", 2),
+            ("Regular", 3),
+            ("Ruim", 4)
+        }
+    );
+
+    futebol.AdicionarPergunta(
+        texto: "Qual tem sido o maior problema do time atualmente?",
+        ordem: 2,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Falta de regularidade", 1),
+            ("Baixo poder ofensivo", 2),
+            ("Problemas defensivos", 3),
+            ("Elenco curto", 4)
+        }
+    );
+
+    futebol.AdicionarPergunta(
+        texto: "O estilo de jogo atual do time te agrada?",
+        ordem: 3,
+        obrigatoria: true,
+        opcoes: new[]
+        {
+            ("Sim, bastante", 1),
+            ("Em parte", 2),
+            ("Pouco", 3),
+            ("Não", 4)
+        }
+    );
+
+    questionarios.Add(futebol);
+
+    foreach (var questionario in questionarios)
+    {
+        var filtro = Builders<Questionario>.Filter.Eq(q => q.Titulo, questionario.Titulo);
+        var existente = await _context.Questionarios.Find(filtro).AnyAsync();
+
+        if (existente)
+        {
+            _logger.LogInformation("Questionário já existe, pulando: {Titulo}", questionario.Titulo);
+            continue;
         }
 
-        // --- Question�rio 1: Satisfa��o ---
-        var satisfacao = Questionario.Criar(
-            titulo: "Pesquisa de Satisfa��o",
-            descricao: "Avalie sua experi�ncia com nossos servi�os.",
-            dataInicio: DateTime.UtcNow,
-            dataFim: DateTime.UtcNow.AddDays(30),
-            usuarioId: adminId
-        );
-
-        satisfacao.AdicionarPergunta(
-            texto: "Como voc� avalia o atendimento?",
-            ordem: 1,
-            obrigatoria: true,
-            opcoes: new[]
-            {
-                ("�timo", 1),
-                ("Bom", 2),
-                ("Regular", 3),
-                ("Ruim", 4)
-            }
-        );
-
-        satisfacao.AdicionarPergunta(
-            texto: "Voc� recomendaria nossos servi�os?",
-            ordem: 2,
-            obrigatoria: true,
-            opcoes: new[]
-            {
-                ("Sim, com certeza", 1),
-                ("Provavelmente sim", 2),
-                ("Provavelmente n�o", 3),
-                ("N�o recomendaria", 4)
-            }
-        );
-
-        satisfacao.AdicionarPergunta(
-            texto: "Qual aspecto voc� mais valoriza?",
-            ordem: 3,
-            obrigatoria: false,
-            opcoes: new[]
-            {
-                ("Qualidade", 1),
-                ("Pre�o", 2),
-                ("Prazo de entrega", 3),
-                ("Suporte", 4)
-            }
-        );
-
-        await _context.Questionarios.InsertOneAsync(satisfacao);
-        _logger.LogInformation("?? Question�rio criado  ?  '{Titulo}'", satisfacao.Titulo);
-
-        // --- Question�rio 2: Clima Organizacional ---
-        var clima = Questionario.Criar(
-            titulo: "Clima Organizacional",
-            descricao: "Pesquisa interna de clima e cultura da empresa.",
-            dataInicio: DateTime.UtcNow,
-            dataFim: DateTime.UtcNow.AddDays(60),
-            usuarioId: adminId
-        );
-
-        clima.AdicionarPergunta(
-            texto: "Como voc� avalia o ambiente de trabalho?",
-            ordem: 1,
-            obrigatoria: true,
-            opcoes: new[]
-            {
-                ("Excelente", 1),
-                ("Bom", 2),
-                ("Neutro", 3),
-                ("Ruim", 4)
-            }
-        );
-
-        clima.AdicionarPergunta(
-            texto: "Voc� se sente valorizado pela empresa?",
-            ordem: 2,
-            obrigatoria: true,
-            opcoes: new[]
-            {
-                ("Sempre", 1),
-                ("Frequentemente", 2),
-                ("Raramente", 3),
-                ("Nunca", 4)
-            }
-        );
-
-        await _context.Questionarios.InsertOneAsync(clima);
-        _logger.LogInformation("?? Question�rio criado  ?  '{Titulo}'", clima.Titulo);
+        await _context.Questionarios.InsertOneAsync(questionario);
+        _logger.LogInformation("Questionário criado com sucesso: {Titulo}", questionario.Titulo);
     }
+}
 }
