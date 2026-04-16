@@ -899,6 +899,134 @@
           "fields": ""
         }
       }
+    },
+    {
+      "id": 19,
+      "title": "CPU por Sistema",
+      "type": "piechart",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"backend.*\"}[5m]))",
+          "legendFormat": "Backend",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"frontend.*\"}[5m]))",
+          "legendFormat": "Frontend",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"mongodb.*\"}[5m]))",
+          "legendFormat": "MongoDB",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"rabbitmq.*\"}[5m]))",
+          "legendFormat": "RabbitMQ",
+          "refId": "D"
+        }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [ "lastNotNull" ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "cores"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "title": "Memoria por Sistema",
+      "type": "piechart",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 45,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes{pod=~\"backend.*\"})",
+          "legendFormat": "Backend",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(container_memory_usage_bytes{pod=~\"frontend.*\"})",
+          "legendFormat": "Frontend",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(container_memory_usage_bytes{pod=~\"mongodb.*\"})",
+          "legendFormat": "MongoDB",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(container_memory_usage_bytes{pod=~\"rabbitmq.*\"})",
+          "legendFormat": "RabbitMQ",
+          "refId": "D"
+        }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": true
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [ "lastNotNull" ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      }
     }
   ]
 }
