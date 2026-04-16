@@ -180,13 +180,33 @@ minikube service grafana -n questionario
 **Dashboard:** "Questionario - Visão Geral do Kubernetes"
 
 **Métricas disponíveis:**
+
+*Infraestrutura (via kube-state-metrics + cAdvisor):*
 - ✅ Backend Ativo (quantos pods rodando)
 - ✅ Frontend Ativo
 - ✅ CPU Usage por Pod
 - ✅ Memory Usage por Pod
 - ✅ Network I/O
 - ✅ Pods Running/Pending/Failed
-- ✅ HTTP Requests (se backend expor métricas)
+
+*Métricas da API .NET (via rota `/metrics` do backend):*
+- ✅ Total de requisições recebidas
+- ✅ Taxa de requisições por segundo (req/s)
+- ✅ Distribuição de hits por rota (donut chart com todas as rotas da API)
+- ✅ Hits por rota com método HTTP (barchart ordenado)
+- ✅ Requisições/s por rota em tempo real
+- ✅ Latência p50 / p95 / p99 por rota (histograma)
+- ✅ Erros 4xx por rota (erros de cliente)
+- ✅ Erros 5xx por rota (erros de servidor)
+- ✅ Taxa de erro percentual
+- ✅ Memória RAM do processo .NET
+
+> O backend expõe a rota `/metrics` via `prometheus-net.AspNetCore`.
+> O Prometheus coleta essas métricas a cada 15s e o Grafana as exibe nos dashboards.
+
+*Logs estruturados (via Serilog + Loki):*
+- ✅ Logs de erro em tempo real
+- ✅ Logs de requisições HTTP com rota, método, status e tempo de resposta
 
 **Refresh automático:** 10 segundos
 

@@ -25,7 +25,7 @@ public class DatabaseSeeder
         var admin = await SeedAdminAsync();
         await SeedQuestionariosAsync(admin.Id);
 
-        _logger.LogInformation("? Seed concluído.");
+        _logger.LogInformation("? Seed concluï¿½do.");
     }
 
     // ?????????????????????????????????????????????????????????????????????????
@@ -34,15 +34,14 @@ public class DatabaseSeeder
     private async Task<Usuario> SeedAdminAsync()
     {
         const string adminEmail = "admin@questionario.com";
+        const string analistaEmail = "analista@questionario.com";
 
         var filter = Builders<Usuario>.Filter.Eq("email", adminEmail);
-        var existente = await _context.Usuarios
-            .Find(filter)
-            .FirstOrDefaultAsync();
+        var existente = await _context.Usuarios.Find(filter).FirstOrDefaultAsync();
 
         if (existente is not null)
         {
-            _logger.LogInformation("??  Admin já existe, pulando.");
+            _logger.LogInformation("Admin jÃ¡ existe, pulando.");
             return existente;
         }
 
@@ -54,24 +53,29 @@ public class DatabaseSeeder
         );
 
         await _context.Usuarios.InsertOneAsync(admin);
-        _logger.LogInformation("?? Admin criado  ?  {Email}  |  senha: Admin@123", adminEmail);
+        _logger.LogInformation("Admin criado | {Email} | senha: Admin@123", adminEmail);
 
-        // Cria também um analista de exemplo
-        var analista = new Usuario(
-            nome: "Analista Exemplo",
-            email: Email.Create("analista@questionario.com"),
-            senhaHash: BCrypt.Net.BCrypt.HashPassword("Analista@123"),
-            role: UsuarioRole.Analista
-        );
+        var filterAnalista = Builders<Usuario>.Filter.Eq("email", analistaEmail);
+        var analistaExistente = await _context.Usuarios.Find(filterAnalista).FirstOrDefaultAsync();
 
-        await _context.Usuarios.InsertOneAsync(analista);
-        _logger.LogInformation("?? Analista criado  ?  analista@questionario.com  |  senha: Analista@123");
+        if (analistaExistente is null)
+        {
+            var analista = new Usuario(
+                nome: "Analista Exemplo",
+                email: Email.Create(analistaEmail),
+                senhaHash: BCrypt.Net.BCrypt.HashPassword("Analista@123"),
+                role: UsuarioRole.Analista
+            );
+
+            await _context.Usuarios.InsertOneAsync(analista);
+            _logger.LogInformation("Analista criado | {Email} | senha: Analista@123", analistaEmail);
+        }
 
         return admin;
     }
 
     // ?????????????????????????????????????????????????????????????????????????
-    // Questionários de exemplo
+    // Questionï¿½rios de exemplo
     // ?????????????????????????????????????????????????????????????????????????
     private async Task SeedQuestionariosAsync(Guid adminId)
     {
@@ -80,26 +84,26 @@ public class DatabaseSeeder
 
         if (totalExistente > 0)
         {
-            _logger.LogInformation("??  Questionários já existem, pulando.");
+            _logger.LogInformation("??  Questionï¿½rios jï¿½ existem, pulando.");
             return;
         }
 
-        // --- Questionário 1: Satisfação ---
+        // --- Questionï¿½rio 1: Satisfaï¿½ï¿½o ---
         var satisfacao = Questionario.Criar(
-            titulo: "Pesquisa de Satisfação",
-            descricao: "Avalie sua experiência com nossos serviços.",
+            titulo: "Pesquisa de Satisfaï¿½ï¿½o",
+            descricao: "Avalie sua experiï¿½ncia com nossos serviï¿½os.",
             dataInicio: DateTime.UtcNow,
             dataFim: DateTime.UtcNow.AddDays(30),
             usuarioId: adminId
         );
 
         satisfacao.AdicionarPergunta(
-            texto: "Como você avalia o atendimento?",
+            texto: "Como vocï¿½ avalia o atendimento?",
             ordem: 1,
             obrigatoria: true,
             opcoes: new[]
             {
-                ("Ótimo", 1),
+                ("ï¿½timo", 1),
                 ("Bom", 2),
                 ("Regular", 3),
                 ("Ruim", 4)
@@ -107,35 +111,35 @@ public class DatabaseSeeder
         );
 
         satisfacao.AdicionarPergunta(
-            texto: "Você recomendaria nossos serviços?",
+            texto: "Vocï¿½ recomendaria nossos serviï¿½os?",
             ordem: 2,
             obrigatoria: true,
             opcoes: new[]
             {
                 ("Sim, com certeza", 1),
                 ("Provavelmente sim", 2),
-                ("Provavelmente não", 3),
-                ("Não recomendaria", 4)
+                ("Provavelmente nï¿½o", 3),
+                ("Nï¿½o recomendaria", 4)
             }
         );
 
         satisfacao.AdicionarPergunta(
-            texto: "Qual aspecto você mais valoriza?",
+            texto: "Qual aspecto vocï¿½ mais valoriza?",
             ordem: 3,
             obrigatoria: false,
             opcoes: new[]
             {
                 ("Qualidade", 1),
-                ("Preço", 2),
+                ("Preï¿½o", 2),
                 ("Prazo de entrega", 3),
                 ("Suporte", 4)
             }
         );
 
         await _context.Questionarios.InsertOneAsync(satisfacao);
-        _logger.LogInformation("?? Questionário criado  ?  '{Titulo}'", satisfacao.Titulo);
+        _logger.LogInformation("?? Questionï¿½rio criado  ?  '{Titulo}'", satisfacao.Titulo);
 
-        // --- Questionário 2: Clima Organizacional ---
+        // --- Questionï¿½rio 2: Clima Organizacional ---
         var clima = Questionario.Criar(
             titulo: "Clima Organizacional",
             descricao: "Pesquisa interna de clima e cultura da empresa.",
@@ -145,7 +149,7 @@ public class DatabaseSeeder
         );
 
         clima.AdicionarPergunta(
-            texto: "Como você avalia o ambiente de trabalho?",
+            texto: "Como vocï¿½ avalia o ambiente de trabalho?",
             ordem: 1,
             obrigatoria: true,
             opcoes: new[]
@@ -158,7 +162,7 @@ public class DatabaseSeeder
         );
 
         clima.AdicionarPergunta(
-            texto: "Você se sente valorizado pela empresa?",
+            texto: "Vocï¿½ se sente valorizado pela empresa?",
             ordem: 2,
             obrigatoria: true,
             opcoes: new[]
@@ -171,6 +175,6 @@ public class DatabaseSeeder
         );
 
         await _context.Questionarios.InsertOneAsync(clima);
-        _logger.LogInformation("?? Questionário criado  ?  '{Titulo}'", clima.Titulo);
+        _logger.LogInformation("?? Questionï¿½rio criado  ?  '{Titulo}'", clima.Titulo);
     }
 }

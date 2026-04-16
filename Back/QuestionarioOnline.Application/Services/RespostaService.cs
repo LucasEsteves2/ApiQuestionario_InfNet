@@ -16,17 +16,20 @@ public class RespostaService : IRespostaService
     private readonly IQuestionarioRepository _questionarioRepository;
     private readonly IRespostaRepository _respostaRepository;
     private readonly RegistrarRespostaRequestValidator _validator;
+    private readonly IMetricasService _metricas;
 
     public RespostaService(
         IMessageQueue messageQueue,
         IQuestionarioRepository questionarioRepository,
         IRespostaRepository respostaRepository,
-        RegistrarRespostaRequestValidator validator)
+        RegistrarRespostaRequestValidator validator,
+        IMetricasService metricas)
     {
         _messageQueue = messageQueue;
         _questionarioRepository = questionarioRepository;
         _respostaRepository = respostaRepository;
         _validator = validator;
+        _metricas = metricas;
     }
 
     public async Task<Result<RespostaRegistradaDto>> RegistrarRespostaAsync(RegistrarRespostaRequestDto request)
@@ -42,12 +45,12 @@ public class RespostaService : IRespostaService
         if (!validationResult.IsValid)
         {
             var errors = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-            return Result.Failure<RespostaRegistradaDto>($"Erro de validaÁ„o: {errors}");
+            return Result.Failure<RespostaRegistradaDto>($"Erro de valida√ß√£o: {errors}");
         }
 
         var questionario = await _questionarioRepository.ObterPorIdComPerguntasAsync(request.QuestionarioId);
         if (questionario is null)
-            return Result.Failure<RespostaRegistradaDto>("Question·rio n„o encontrado");
+            return Result.Failure<RespostaRegistradaDto>("Question√°rio n√£o encontrado");
 
         try
         {
@@ -83,12 +86,14 @@ public class RespostaService : IRespostaService
             );
 
             await _messageQueue.SendAsync(QueueConstants.RespostasQueueName, mensagem);
+            _metricas.RespostaEnviadaParaFila();
 
             var resposta = new RespostaRegistradaDto(Guid.NewGuid(), request.QuestionarioId, DateTime.UtcNow);
             return Result.Success(resposta);
         }
         catch (DomainException ex)
         {
+            _metricas.ErroDominio("registrar_resposta");
             return Result.Failure<RespostaRegistradaDto>(ex.Message);
         }
     }
@@ -117,11 +122,13 @@ public class RespostaService : IRespostaService
             }
 
             await _respostaRepository.AdicionarAsync(resposta, cancellationToken);
+            _metricas.RespostaProcessada();
 
             return Result.Success(resposta);
         }
         catch (DomainException ex)
         {
+            _metricas.ErroDominio("processar_resposta");
             return Result.Failure<Resposta>(ex.Message);
         }
     }
@@ -132,7 +139,7 @@ public class RespostaService : IRespostaService
     {
         var questionario = await _questionarioRepository.ObterPorIdAsync(questionarioId, cancellationToken);
         if (questionario is null)
-            return Result.NotFound<IEnumerable<RespostaDto>>("Question·rio n„o encontrado");
+            return Result.NotFound<IEnumerable<RespostaDto>>("Question√°rio n√£o encontrado");
 
         var respostas = await _respostaRepository.ObterPorQuestionarioAsync(questionarioId, cancellationToken);
 

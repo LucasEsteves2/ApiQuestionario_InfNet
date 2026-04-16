@@ -1,0 +1,544 @@
+{
+  "title": "Questionario - Infraestrutura Kubernetes",
+  "uid": "questionario-k8s",
+  "tags": [ "kubernetes", "infra", "questionario" ],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "Resumo do Cluster",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Backend Ativo",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"backend.*\"} == 1)",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 2 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "title": "Frontend Ativo",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"frontend.*\"} == 1)",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 2 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "title": "MongoDB Ativo",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"mongodb.*\"} == 1)",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "title": "RabbitMQ Ativo",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"rabbitmq.*\"} == 1)",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "title": "Pods Ativos",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\"} == 1)",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "green", "value": 8 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "title": "Total Restart",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"questionario\"})",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 3 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "panels": [],
+      "title": "Replicas",
+      "type": "row"
+    },
+    {
+      "id": 7,
+      "title": "Backend Meta",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 6, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "kube_deployment_spec_replicas{namespace=\"questionario\",deployment=\"backend\"}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value", "graphMode": "none", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "color": { "fixedColor": "blue", "mode": "fixed" }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "title": "Backend Online",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 6, "y": 6, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{namespace=\"questionario\",deployment=\"backend\"}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 2 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "title": "Frontend Meta",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 6, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "kube_deployment_spec_replicas{namespace=\"questionario\",deployment=\"frontend\"}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value", "graphMode": "none", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "color": { "fixedColor": "blue", "mode": "fixed" }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "title": "Frontend Online",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 18, "y": 6, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{namespace=\"questionario\",deployment=\"frontend\"}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0, "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "green", "value": 2 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 10 },
+      "id": 102,
+      "panels": [],
+      "title": "Distribuicao",
+      "type": "row"
+    },
+    {
+      "id": 11,
+      "title": "Pods por Sistema",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 11, "w": 8, "h": 8 },
+      "targets": [
+        { "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"backend.*\"} == 1)", "legendFormat": "Backend", "refId": "A" },
+        { "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"frontend.*\"} == 1)", "legendFormat": "Frontend", "refId": "B" },
+        { "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"mongodb.*\"} == 1)", "legendFormat": "MongoDB", "refId": "C" },
+        { "expr": "count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\",pod=~\"rabbitmq.*\"} == 1)", "legendFormat": "RabbitMQ", "refId": "D" }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "title": "Pods por Status",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 8, "y": 11, "w": 8, "h": 8 },
+      "targets": [
+        { "expr": "sum by (phase) (kube_pod_status_phase{namespace=\"questionario\"} == 1)", "legendFormat": "{{phase}}", "refId": "A" }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "short" },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "title": "Restart por Pod",
+      "type": "bargauge",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 16, "y": 11, "w": 8, "h": 8 },
+      "targets": [
+        { "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"questionario\"}) by (pod)", "legendFormat": "{{pod}}", "refId": "A" }
+      ],
+      "options": {
+        "displayMode": "gradient", "orientation": "horizontal",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "id": 103,
+      "panels": [],
+      "title": "Recursos",
+      "type": "row"
+    },
+    {
+      "id": 14,
+      "title": "CPU por Pod",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(container_cpu_usage_seconds_total{pod!=\"\"}[5m])) by (pod)", "legendFormat": "{{pod}}", "refId": "A" }
+      ],
+      "options": {
+        "legend": { "calcs": [ "mean", "max", "lastNotNull" ], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "cores", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 15,
+      "title": "Memoria por Pod",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(container_memory_usage_bytes{pod!=\"\"}) by (pod)", "legendFormat": "{{pod}}", "refId": "A" }
+      ],
+      "options": {
+        "legend": { "calcs": [ "mean", "max", "lastNotNull" ], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 28 },
+      "id": 104,
+      "panels": [],
+      "title": "Detalhes",
+      "type": "row"
+    },
+    {
+      "id": 18,
+      "title": "Pods Backend",
+      "type": "table",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 29, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "kube_pod_info{namespace=\"questionario\",pod=~\"backend.*\"}", "format": "table", "instant": true, "refId": "A" }
+      ],
+      "options": {
+        "showHeader": true,
+        "footer": { "show": false, "reducer": [ "sum" ], "fields": "" }
+      }
+    },
+    {
+      "id": 19,
+      "title": "CPU por Sistema",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 37, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"backend.*\"}[5m]))", "legendFormat": "Backend", "refId": "A" },
+        { "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"frontend.*\"}[5m]))", "legendFormat": "Frontend", "refId": "B" },
+        { "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"mongodb.*\"}[5m]))", "legendFormat": "MongoDB", "refId": "C" },
+        { "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"rabbitmq.*\"}[5m]))", "legendFormat": "RabbitMQ", "refId": "D" }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "cores" },
+        "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "title": "Memoria por Sistema",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 37, "w": 12, "h": 8 },
+      "targets": [
+        { "expr": "sum(container_memory_usage_bytes{pod=~\"backend.*\"})", "legendFormat": "Backend", "refId": "A" },
+        { "expr": "sum(container_memory_usage_bytes{pod=~\"frontend.*\"})", "legendFormat": "Frontend", "refId": "B" },
+        { "expr": "sum(container_memory_usage_bytes{pod=~\"mongodb.*\"})", "legendFormat": "MongoDB", "refId": "C" },
+        { "expr": "sum(container_memory_usage_bytes{pod=~\"rabbitmq.*\"})", "legendFormat": "RabbitMQ", "refId": "D" }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" }, "unit": "bytes" },
+        "overrides": []
+      }
+    }
+  ]
+}

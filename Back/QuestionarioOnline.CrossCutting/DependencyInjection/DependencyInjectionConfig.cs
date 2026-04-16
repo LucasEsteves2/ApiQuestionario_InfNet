@@ -6,6 +6,7 @@ using QuestionarioOnline.Application.Interfaces;
 using QuestionarioOnline.Application.Services;
 using QuestionarioOnline.Domain.Interfaces;
 using QuestionarioOnline.Infrastructure.Messaging;
+using QuestionarioOnline.Infrastructure.Metrics;
 using QuestionarioOnline.Infrastructure.Persistence;
 using QuestionarioOnline.Infrastructure.Repositories;
 using System.Reflection;
@@ -60,6 +61,7 @@ public static class DependencyInjectionConfig
         });
 
         // Services
+        services.AddSingleton<IMetricasService, MetricasService>();
         services.AddScoped<IQuestionarioService, QuestionarioService>();
         services.AddScoped<IRespostaService, RespostaService>();
         services.AddScoped<IAuthService, Application.Services.AuthService>();

@@ -14,12 +14,14 @@ public class QuestionarioService : IQuestionarioService
     private readonly IQuestionarioRepository _questionarioRepository;
     private readonly IRespostaRepository _respostaRepository;
     private readonly CriarQuestionarioRequestValidator _validator;
+    private readonly IMetricasService _metricas;
 
-    public QuestionarioService(IQuestionarioRepository questionarioRepository, IRespostaRepository respostaRepository, CriarQuestionarioRequestValidator validator)
+    public QuestionarioService(IQuestionarioRepository questionarioRepository, IRespostaRepository respostaRepository, CriarQuestionarioRequestValidator validator, IMetricasService metricas)
     {
         _questionarioRepository = questionarioRepository;
         _respostaRepository = respostaRepository;
         _validator = validator;
+        _metricas = metricas;
     }
 
     public async Task<Result<QuestionarioDto>> CriarQuestionarioAsync(CriarQuestionarioRequest request, Guid usuarioId, CancellationToken cancellationToken = default)
@@ -33,10 +35,12 @@ public class QuestionarioService : IQuestionarioService
         {
             var questionario = CriarQuestionarioComPerguntas(request, usuarioId);
             await _questionarioRepository.AdicionarAsync(questionario, cancellationToken);
+            _metricas.QuestionarioCriado();
             return Result.Success(QuestionarioMapper.ToDto(questionario));
         }
         catch (DomainException ex)
         {
+            _metricas.ErroDominio("criar_questionario");
             return Result.Failure<QuestionarioDto>(ex.Message);
         }
     }
@@ -46,11 +50,9 @@ public class QuestionarioService : IQuestionarioService
         try
         {
             var questionario = await ObterQuestionarioAsync(questionarioId, cancellationToken);
-
             questionario.Encerrar();
-
             await _questionarioRepository.AtualizarAsync(questionario, cancellationToken);
-
+            _metricas.QuestionarioEncerrado();
             return Result.Success(QuestionarioMapper.ToDto(questionario));
         }
         catch (NotFoundException ex)
@@ -59,6 +61,7 @@ public class QuestionarioService : IQuestionarioService
         }
         catch (DomainException ex)
         {
+            _metricas.ErroDominio("encerrar_questionario");
             return Result.Failure<QuestionarioDto>(ex.Message);
         }
     }
@@ -68,11 +71,9 @@ public class QuestionarioService : IQuestionarioService
         try
         {
             var questionario = await ObterQuestionarioAsync(questionarioId, cancellationToken);
-
-            // Delete respostas (and their itens) explicitly to avoid multiple cascade paths on SQL Server
             await _respostaRepository.DeletarPorQuestionarioAsync(questionarioId, cancellationToken);
-
             await _questionarioRepository.DeletarAsync(questionario, cancellationToken);
+            _metricas.QuestionarioDeletado();
             return Result.Success();
         }
         catch (NotFoundException ex)
@@ -81,6 +82,7 @@ public class QuestionarioService : IQuestionarioService
         }
         catch (DomainException ex)
         {
+            _metricas.ErroDominio("deletar_questionario");
             return Result.Failure(ex.Message);
         }
     }
@@ -90,7 +92,6 @@ public class QuestionarioService : IQuestionarioService
         try
         {
             var questionario = await ObterQuestionarioAsync(questionarioId, cancellationToken);
-
             questionario.GarantirQuePodeReceberRespostas();
             return Result.Success(QuestionarioMapper.ToPublicoDto(questionario));
         }
@@ -132,8 +133,6 @@ public class QuestionarioService : IQuestionarioService
         try
         {
             var questionario = await ObterQuestionarioAsync(questionarioId, cancellationToken);
-
-
             var respostas = await _respostaRepository.ObterPorQuestionarioAsync(questionarioId, cancellationToken);
             var resultado = CalcularResultados(questionario, respostas);
             return Result.Success(resultado);
@@ -181,15 +180,14 @@ public class QuestionarioService : IQuestionarioService
 
     private async Task<Questionario> ObterQuestionarioAsync(Guid questionarioId, CancellationToken cancellationToken)
     {
-        var questionario = await _questionarioRepository
-            .ObterPorIdComPerguntasAsync(questionarioId, cancellationToken);
+        var questionario = await _questionarioRepository.ObterPorIdComPerguntasAsync(questionarioId, cancellationToken);
 
         if (questionario is null)
-            throw new NotFoundException("Question·rio n„o encontrado");
+            throw new NotFoundException("Question√°rio n√£o encontrado");
 
         return questionario;
     }
 
     private static Result<T> ValidationFailure<T>(FluentValidation.Results.ValidationResult v) =>
-        Result.Failure<T>($"Erro de validaÁ„o: {string.Join("; ", v.Errors.Select(e => e.ErrorMessage))}");
+        Result.Failure<T>($"Erro de valida√ß√£o: {string.Join("; ", v.Errors.Select(e => e.ErrorMessage))}");
 }

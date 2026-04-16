@@ -8,7 +8,11 @@ configMapGenerator:
   - name: grafana-dashboard
     namespace: questionario
     files:
-      - kubernetes.json=base/monitoring/kubernetes-dashboard.json
+      - kubernetes.json=base/monitoring/dashboards/01-kubernetes-infra.json
+  - name: grafana-dashboard-negocio
+    namespace: questionario
+    files:
+      - negocio.json=base/monitoring/dashboards/02-backend-negocio.json
 
 resources:
   - base/namespace.yaml
@@ -17,6 +21,7 @@ resources:
   - base/database/rabbitmq.yaml
   - base/application/backend.yaml
   - base/application/frontend.yaml
+  - base/monitoring/loki.yaml
   - base/monitoring/kube-state-metrics.yaml
   - base/monitoring/prometheus.yaml
   - base/monitoring/grafana.yaml

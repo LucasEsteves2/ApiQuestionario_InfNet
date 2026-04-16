@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Prometheus;
 using QuestionarioOnline.Api.GraphQL;
 using QuestionarioOnline.Api.GraphQL.Mutations;
 using QuestionarioOnline.Api.GraphQL.Queries;
@@ -7,10 +8,26 @@ using QuestionarioOnline.Application.Interfaces;
 using QuestionarioOnline.CrossCutting.DependencyInjection;
 using QuestionarioOnline.Infrastructure.Authentication;
 using QuestionarioOnline.Infrastructure.Persistence;
+using Serilog;
+using Serilog.Events;
 using System.Text;
 using GraphQL;
 
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "QuestionarioOnline")
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .WriteTo.Http(
+        requestUri: "http://loki:3100/loki/api/v1/push",
+        queueLimitBytes: null,
+        textFormatter: new Serilog.Formatting.Json.JsonFormatter())
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -108,14 +125,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-//grapichQL
-
 builder.Services.AddScoped<QuestionarioSchema>();
 builder.Services.AddScoped<QuestionarioQuery>();
 builder.Services.AddScoped<QuestionarioMutation>();
 builder.Services.AddGraphQL(otpions => otpions.AddGraphTypes().AddSystemTextJson());
-
-
 
 var app = builder.Build();
 
@@ -125,14 +138,20 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000}ms";
+});
+
 app.UseCors("AllowAll");
 app.UseGraphQL<QuestionarioSchema>("/graphql");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseHttpMetrics();
 
 app.MapControllers();
+app.MapMetrics();
 
-// Seed de dados iniciais (só insere se o banco estiver vazio)
 using (var scope = app.Services.CreateScope())
 {
     var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();

@@ -13,6 +13,11 @@ data:
         url: http://prometheus:9090
         isDefault: true
         uid: prometheus
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki:3100
+        uid: loki
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -66,6 +71,8 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
             - name: grafana-dashboards
               mountPath: /var/lib/grafana/dashboards
+            - name: grafana-dashboards-negocio
+              mountPath: /var/lib/grafana/dashboards/negocio
           readinessProbe:
             httpGet:
               path: /api/health
@@ -88,6 +95,9 @@ spec:
         - name: grafana-dashboards
           configMap:
             name: grafana-dashboard
+        - name: grafana-dashboards-negocio
+          configMap:
+            name: grafana-dashboard-negocio
 ---
 apiVersion: v1
 kind: Service

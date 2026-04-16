@@ -1,0 +1,633 @@
+{
+  "title": "Questionario - Backend e Negocio",
+  "uid": "questionario-negocio",
+  "tags": ["negocio", "backend", "api", "questionario"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "panels": [],
+      "title": "API - Visao Geral",
+      "type": "row"
+    },
+    {
+      "id": 1,
+      "title": "Total de Requisicoes",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(http_requests_received_total{job=\"backend\"})", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "blue", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "title": "Requisicoes/s (agora)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(rate(http_requests_received_total{job=\"backend\"}[1m]))", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "decimals": 2, "color": { "fixedColor": "green", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "title": "Total de Erros (4xx + 5xx)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(http_requests_received_total{job=\"backend\", code=~\"[45]..\"})", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 10 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "title": "Taxa de Erro (%)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(rate(http_requests_received_total{job=\"backend\", code=~\"[45]..\"}[5m])) / sum(rate(http_requests_received_total{job=\"backend\"}[5m])) * 100", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "none", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "title": "Latencia Mediana (p50)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 16, "y": 1, "w": 4, "h": 4 },
+      "targets": [{ "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[5m])) by (le)) * 1000", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "none", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms", "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 6,
+      "title": "Memoria .NET",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 20, "y": 1, "w": 4, "h": 4 },
+      "targets": [{ "expr": "sum(process_working_set_bytes{job=\"backend\"})", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "value", "graphMode": "area", "justifyMode": "auto",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "color": { "fixedColor": "purple", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "panels": [],
+      "title": "API - Chamadas por Rota",
+      "type": "row"
+    },
+    {
+      "id": 7,
+      "title": "Chamadas no Backend",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 6, "w": 4, "h": 11 },
+      "targets": [{ "expr": "sum(http_requests_received_total{job=\"backend\"})", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "blue", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "title": "Chamadas por Rota",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 4, "y": 6, "w": 20, "h": 11 },
+      "targets": [
+        { "expr": "sort_desc(sum(http_requests_received_total{job=\"backend\"}) by (endpoint, method))", "legendFormat": "{{method}} {{endpoint}}", "refId": "A", "instant": true }
+      ],
+      "options": {
+        "displayLabels": [ "percent" ],
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": [ "lastNotNull" ], "fields": "", "values": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 9,
+      "title": "Requisicoes/s por Rota (tempo real)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 17, "w": 24, "h": 9 },
+      "targets": [
+        { "expr": "sum(rate(http_requests_received_total{job=\"backend\"}[1m])) by (endpoint, method)", "legendFormat": "{{method}} {{endpoint}}", "refId": "A" }
+      ],
+      "options": {
+        "legend": { "calcs": ["mean", "max", "lastNotNull"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+      "id": 102,
+      "panels": [],
+      "title": "API - Latencia",
+      "type": "row"
+    },
+    {
+      "id": 10,
+      "title": "Latencia p99 por Rota (ms)",
+      "type": "barchart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 27, "w": 12, "h": 9 },
+      "targets": [
+        { "expr": "sort_desc(histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[5m])) by (le, endpoint)) * 1000)", "legendFormat": "{{endpoint}}", "refId": "A", "instant": true }
+      ],
+      "options": {
+        "barWidth": 0.6, "fillOpacity": 80, "gradientMode": "scheme",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "horizontal", "showValue": "always", "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms", "decimals": 0, "color": { "mode": "continuous-RdYlGr" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 11,
+      "title": "Latencia p50 / p95 / p99 (serie temporal)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 27, "w": 12, "h": 9 },
+      "targets": [
+        { "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[5m])) by (le)) * 1000", "legendFormat": "p99", "refId": "A" },
+        { "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[5m])) by (le)) * 1000", "legendFormat": "p95", "refId": "B" },
+        { "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[5m])) by (le)) * 1000", "legendFormat": "p50", "refId": "C" }
+      ],
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 36 },
+      "id": 103,
+      "panels": [],
+      "title": "API - Erros por Rota",
+      "type": "row"
+    },
+    {
+      "id": 12,
+      "title": "Erros 4xx por Rota",
+      "type": "barchart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 37, "w": 12, "h": 9 },
+      "targets": [
+        { "expr": "sort_desc(sum(http_requests_received_total{job=\"backend\", code=~\"4..\"}) by (endpoint, code))", "legendFormat": "{{code}} {{endpoint}}", "refId": "A", "instant": true }
+      ],
+      "options": {
+        "barWidth": 0.6, "fillOpacity": 80, "gradientMode": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "horizontal", "showValue": "always", "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "fixedColor": "orange", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 13,
+      "title": "Erros 5xx por Rota",
+      "type": "barchart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 37, "w": 12, "h": 9 },
+      "targets": [
+        { "expr": "sort_desc(sum(http_requests_received_total{job=\"backend\", code=~\"5..\"}) by (endpoint, code))", "legendFormat": "{{code}} {{endpoint}}", "refId": "A", "instant": true }
+      ],
+      "options": {
+        "barWidth": 0.6, "fillOpacity": 80, "gradientMode": "none",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "orientation": "horizontal", "showValue": "always", "stacking": "none",
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "fixedColor": "red", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 14,
+      "title": "Erros ao longo do tempo (4xx vs 5xx)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 46, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "sum(rate(http_requests_received_total{job=\"backend\", code=~\"4..\"}[1m]))", "legendFormat": "4xx - Erro de Cliente", "refId": "A" },
+        { "expr": "sum(rate(http_requests_received_total{job=\"backend\", code=~\"5..\"}[1m]))", "legendFormat": "5xx - Erro de Servidor", "refId": "B" }
+      ],
+      "options": {
+        "legend": { "calcs": ["sum", "max"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "4xx - Erro de Cliente" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "5xx - Erro de Servidor" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] }
+        ]
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
+      "id": 104,
+      "panels": [],
+      "title": "Negocio - Questionarios",
+      "type": "row"
+    },
+    {
+      "id": 15,
+      "title": "Criados",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 55, "w": 6, "h": 5 },
+      "targets": [{ "expr": "questionarios_criados_total", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "blue", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 16,
+      "title": "Encerrados",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 6, "y": 55, "w": 6, "h": 5 },
+      "targets": [{ "expr": "questionarios_encerrados_total", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "orange", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 17,
+      "title": "Deletados",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 12, "y": 55, "w": 6, "h": 5 },
+      "targets": [{ "expr": "questionarios_deletados_total", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "red", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 18,
+      "title": "Erros de Dominio",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 18, "y": 55, "w": 6, "h": 5 },
+      "targets": [{ "expr": "sum(erros_dominio_total)", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short", "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 19,
+      "title": "Questionarios criados ao longo do tempo",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 60, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "increase(questionarios_criados_total[5m])", "legendFormat": "Criados", "refId": "A" },
+        { "expr": "increase(questionarios_encerrados_total[5m])", "legendFormat": "Encerrados", "refId": "B" }
+      ],
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Criados" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Encerrados" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+        ]
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 68 },
+      "id": 105,
+      "panels": [],
+      "title": "Negocio - Respostas",
+      "type": "row"
+    },
+    {
+      "id": 20,
+      "title": "Enviadas para Fila",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 69, "w": 8, "h": 5 },
+      "targets": [{ "expr": "respostas_fila_total", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "purple", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 21,
+      "title": "Processadas pelo Worker",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 8, "y": 69, "w": 8, "h": 5 },
+      "targets": [{ "expr": "respostas_processadas_total", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "area", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "green", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 22,
+      "title": "Na Fila (aguardando)",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 16, "y": 69, "w": 8, "h": 5 },
+      "targets": [{ "expr": "respostas_fila_total - respostas_processadas_total", "refId": "A", "instant": true }],
+      "options": {
+        "colorMode": "background", "graphMode": "none", "justifyMode": "center",
+        "orientation": "auto", "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short", "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 10 },
+              { "color": "red", "value": 50 }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 23,
+      "title": "Fluxo de Respostas (Fila vs Processadas)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 74, "w": 24, "h": 8 },
+      "targets": [
+        { "expr": "increase(respostas_fila_total[1m])", "legendFormat": "Enviadas para Fila", "refId": "A" },
+        { "expr": "increase(respostas_processadas_total[1m])", "legendFormat": "Processadas", "refId": "B" }
+      ],
+      "options": {
+        "legend": { "calcs": ["sum", "max"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Enviadas para Fila" }, "properties": [{ "id": "color", "value": { "fixedColor": "purple", "mode": "fixed" } }] },
+          { "matcher": { "id": "byName", "options": "Processadas" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }] }
+        ]
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 82 },
+      "id": 106,
+      "panels": [],
+      "title": "Negocio - Erros de Dominio",
+      "type": "row"
+    },
+    {
+      "id": 24,
+      "title": "Erros por Operacao",
+      "type": "piechart",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 0, "y": 83, "w": 10, "h": 9 },
+      "targets": [
+        { "expr": "sum(erros_dominio_total) by (operacao)", "legendFormat": "{{operacao}}", "refId": "A", "instant": true }
+      ],
+      "options": {
+        "displayLabels": ["percent"],
+        "legend": { "displayMode": "list", "placement": "right", "showLegend": true },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      }
+    },
+    {
+      "id": 25,
+      "title": "Erros ao longo do tempo por Operacao",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "x": 10, "y": 83, "w": 14, "h": 9 },
+      "targets": [
+        { "expr": "increase(erros_dominio_total[5m])", "legendFormat": "{{operacao}}", "refId": "A" }
+      ],
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "fixedColor": "red", "mode": "fixed" } },
+        "overrides": []
+      }
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 92 },
+      "id": 107,
+      "panels": [],
+      "title": "Logs do Backend (Loki)",
+      "type": "row"
+    },
+    {
+      "id": 26,
+      "title": "Logs de Erro",
+      "type": "logs",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 93, "w": 24, "h": 10 },
+      "targets": [{ "expr": "{Application=\"QuestionarioOnline\"} |= \"ERR\" | json", "refId": "A" }],
+      "options": {
+        "dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false,
+        "showCommonLabels": false, "showLabels": false, "showTime": true,
+        "sortOrder": "Descending", "wrapLogMessage": false
+      }
+    },
+    {
+      "id": 27,
+      "title": "Logs de Requisicoes HTTP",
+      "type": "logs",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "x": 0, "y": 103, "w": 24, "h": 10 },
+      "targets": [{ "expr": "{Application=\"QuestionarioOnline\"} |= \"HTTP\" | json", "refId": "A" }],
+      "options": {
+        "dedupStrategy": "none", "enableLogDetails": true, "prettifyLogMessage": false,
+        "showCommonLabels": false, "showLabels": false, "showTime": true,
+        "sortOrder": "Descending", "wrapLogMessage": false
+      }
+    }
+  ]
+}

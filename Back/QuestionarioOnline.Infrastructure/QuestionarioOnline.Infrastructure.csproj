@@ -10,6 +10,7 @@
 	<PackageReference Include="Azure.Storage.Queues" Version="12.20.0" />
 	<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 	<PackageReference Include="MongoDB.Driver" Version="3.4.0" />
+	<PackageReference Include="prometheus-net" Version="8.2.1" />
 	<PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
 	<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2" />
   </ItemGroup>
