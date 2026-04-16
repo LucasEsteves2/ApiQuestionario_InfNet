@@ -23,7 +23,7 @@ data:
   provider.yaml: |
     apiVersion: 1
     providers:
-      - name: 'default'
+      - name: default
         orgId: 1
         folder: ''
         type: file
@@ -31,15 +31,6 @@ data:
         editable: true
         options:
           path: /var/lib/grafana/dashboards
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-dashboard
-  namespace: questionario
-data:
-  kubernetes.json: |-
-    {"title":"Questionario Online","uid":"questionario-k8s","tags":["kubernetes"],"timezone":"browser","schemaVersion":38,"refresh":"10s","panels":[{"id":1,"title":"CPU por Pod (%)","type":"timeseries","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":0,"w":12,"h":8},"targets":[{"expr":"sum(rate(container_cpu_usage_seconds_total{namespace=\"questionario\",container!=\"\",container!=\"POD\"}[5m])) by (pod) * 100","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"percent","color":{"mode":"palette-classic"}}}},{"id":2,"title":"Memoria por Pod (MB)","type":"timeseries","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":12,"y":0,"w":12,"h":8},"targets":[{"expr":"sum(container_memory_usage_bytes{namespace=\"questionario\",container!=\"\",container!=\"POD\"}) by (pod) / 1024 / 1024","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"decmbytes","color":{"mode":"palette-classic"}}}},{"id":3,"title":"Replicas do Backend","type":"stat","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":8,"w":6,"h":4},"targets":[{"expr":"count(kube_pod_info{namespace=\"questionario\",pod=~\"backend.*\"})","refId":"A"}],"fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"value":null,"color":"red"},{"value":4,"color":"green"}]},"color":{"mode":"thresholds"}}},"options":{"colorMode":"background","textMode":"auto","reduceOptions":{"calcs":["lastNotNull"]}}},{"id":4,"title":"Pods Rodando","type":"stat","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":6,"y":8,"w":6,"h":4},"targets":[{"expr":"count(kube_pod_status_phase{namespace=\"questionario\",phase=\"Running\"})","refId":"A"}],"fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"value":null,"color":"red"},{"value":1,"color":"green"}]},"color":{"mode":"thresholds"}}},"options":{"colorMode":"background","textMode":"auto","reduceOptions":{"calcs":["lastNotNull"]}}},{"id":5,"title":"Restarts por Pod","type":"stat","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":12,"y":8,"w":6,"h":4},"targets":[{"expr":"sum(kube_pod_container_status_restarts_total{namespace=\"questionario\"}) by (pod)","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"short","thresholds":{"mode":"absolute","steps":[{"value":null,"color":"green"},{"value":3,"color":"yellow"},{"value":5,"color":"red"}]},"color":{"mode":"thresholds"}}},"options":{"colorMode":"background","textMode":"auto","reduceOptions":{"calcs":["lastNotNull"]}}},{"id":6,"title":"Network Recebido (bytes/s)","type":"timeseries","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":0,"y":12,"w":12,"h":8},"targets":[{"expr":"sum(rate(container_network_receive_bytes_total{namespace=\"questionario\"}[5m])) by (pod)","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"Bps","color":{"mode":"palette-classic"}}}},{"id":7,"title":"Network Enviado (bytes/s)","type":"timeseries","datasource":{"type":"prometheus","uid":"prometheus"},"gridPos":{"x":12,"y":12,"w":12,"h":8},"targets":[{"expr":"sum(rate(container_network_transmit_bytes_total{namespace=\"questionario\"}[5m])) by (pod)","legendFormat":"{{pod}}","refId":"A"}],"fieldConfig":{"defaults":{"unit":"Bps","color":{"mode":"palette-classic"}}}}]}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,11 +54,11 @@ spec:
             - containerPort: 3000
           env:
             - name: GF_SECURITY_ADMIN_USER
-              value: "admin"
+              value: admin
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin123"
+              value: admin123
             - name: GF_PATHS_PROVISIONING
-              value: "/etc/grafana/provisioning"
+              value: /etc/grafana/provisioning
           volumeMounts:
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
