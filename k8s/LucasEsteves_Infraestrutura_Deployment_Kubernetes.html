@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucas Esteves - Infraestrutura e Deployment com Kubernetes</title>
+  <style>
+    :root {
+      --fg: #172026;
+      --muted: #4b5b67;
+      --line: #d7e0e5;
+      --accent: #0b6b57;
+      --bg-soft: #f5f8fa;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--fg);
+      margin: 0;
+      line-height: 1.45;
+      font-size: 14px;
+      background: white;
+    }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 36px 40px;
+    }
+    h1, h2, h3 {
+      margin: 0 0 10px;
+      color: #102a43;
+    }
+    h1 {
+      font-size: 28px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--accent);
+    }
+    h2 {
+      margin-top: 26px;
+      font-size: 20px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+    }
+    h3 {
+      margin-top: 18px;
+      font-size: 16px;
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 8px 22px; }
+    li { margin: 4px 0; }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+    }
+    pre {
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+    .lead {
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .callout {
+      background: #eef7f4;
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      margin: 14px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--bg-soft);
+    }
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .caption {
+      margin: 6px 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .evidence-block {
+      margin: 16px 0 22px;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 10px 0 4px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .cover-page {
+      min-height: calc(100vh - 68px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 0;
+      page-break-after: always;
+    }
+    .cover-top,
+    .cover-bottom {
+      text-align: center;
+    }
+    .cover-top p,
+    .cover-bottom p {
+      margin: 4px 0;
+    }
+    .cover-center {
+      text-align: center;
+      padding: 40px 0;
+    }
+    .cover-center h1 {
+      border-bottom: 0;
+      padding-bottom: 0;
+      font-size: 32px;
+      margin-bottom: 18px;
+    }
+    .cover-subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .cover-meta {
+      margin-top: 26px;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="cover-page">
+      <div class="cover-top">
+        <p><strong>INSTITUTO INFNET</strong></p>
+        <p>Infraestrutura e Deployment com Kubernetes</p>
+      </div>
+
+      <div class="cover-center">
+        <h1>Trabalho Final</h1>
+        <p class="cover-subtitle">Infraestrutura e Deployment com Kubernetes</p>
+        <div class="cover-meta">
+          <p><strong>Aluno:</strong> Lucas Esteves de Abreu Rodrigues</p>
+          <p><strong>Projeto:</strong> Deploy da aplicacao Questionario em Kubernetes</p>
+          <p><strong>Ambiente:</strong> Minikube</p>
+        </div>
+      </div>
+
+      <div class="cover-bottom">
+        <p>Rio de Janeiro</p>
+        <p>2026</p>
+      </div>
+    </section>
+
+    <div class="page-break"></div>
+
+
+    <h2>Repositorio para avaliacao</h2>
+    <p>Para avaliacao deste trabalho, o projeto esta hospedado no GitHub no repositorio abaixo. Caso seja necessario reproduzir a solucao localmente, basta acessar ou clonar o projeto.</p>
+    <p><code>https://github.com/LucasEsteves2/ApiQuestionario_InfNet</code></p>
+    <p>Comando para clonagem do repositorio:</p>
+    <pre>git clone https://github.com/LucasEsteves2/ApiQuestionario_InfNet.git</pre>
+    <p>As imagens utilizadas no deploy foram publicadas no Docker Hub. A implantacao foi realizada em ambiente Kubernetes local com Minikube, com manifests organizados na pasta <code>k8s</code> e evidencias de execucao apresentadas neste documento.</p>
+    <p>Imagens Docker utilizadas no deploy:</p>
+    <ul>
+      <li>Backend: https://hub.docker.com/r/luqui25/lucas-fluminense-backend</li>
+      <li>Frontend: https://hub.docker.com/r/luqui25/lucas-fluminense-frontend</li>
+    </ul>
+    <div class="callout">
+      <strong>Estrutura do projeto</strong>
+      <ul>
+        <li>raiz do repositorio organizada com backend, frontend, esteira de CI/CD e pasta <code>k8s</code> para a infraestrutura Kubernetes</li>
+      </ul>
+      <pre>ApiQuestionario_InfNet/
+|-- backend/
+|-- frontend/
+|-- .github/workflows/
+`-- k8s/</pre>
+    </div>
+
+    <h2>Arquitetura proposta</h2>
+    <p>A solucao foi organizada para atender ao enunciado do trabalho, separando os recursos entre aplicacao, persistencia e monitoramento. O projeto roda no Minikube, com manifests centralizados na pasta <code>k8s</code>, e a exposicao externa foi limitada ao Grafana. Os demais servicos permanecem internos no cluster.</p>
+
+    <div class="page-break"></div>
+    <h2>Estrutura utilizada</h2>
+    <pre>k8s/
+|-- kustomization.yaml
+|-- base/
+|   |-- namespace.yaml
+|   |-- secrets.yaml
+|   |-- application/
+|   |   |-- backend.yaml
+|   |   `-- frontend.yaml
+|   |-- database/
+|   |   |-- mongodb.yaml
+|   |   `-- rabbitmq.yaml
+|   `-- monitoring/
+|       |-- prometheus.yaml
+|       |-- grafana.yaml
+|       |-- loki.yaml
+|       `-- kube-state-metrics.yaml
+`-- scripts/
+    `-- stress-test.ps1</pre>
+
+    <h3>O que cada arquivo faz</h3>
+    <p>Resumo rapido dos principais arquivos da entrega:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Arquivo</th>
+          <th>Funcao</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>kustomization.yaml</code></td><td>reune todos os manifests e gera os ConfigMaps dos dashboards</td></tr>
+        <tr><td><code>namespace.yaml</code> e <code>secrets.yaml</code></td><td>criam o namespace e centralizam credenciais</td></tr>
+        <tr><td><code>application/backend.yaml</code> e <code>frontend.yaml</code></td><td>definem frontend e backend com seus Deployments e Services</td></tr>
+        <tr><td><code>database/mongodb.yaml</code> e <code>rabbitmq.yaml</code></td><td>cada arquivo concentra <code>PVC + Deployment + Service</code> do seu servico</td></tr>
+        <tr><td><code>monitoring/prometheus.yaml</code></td><td>configura coleta de metricas, <code>PVC</code>, Deployment, Service e RBAC</td></tr>
+        <tr><td><code>monitoring/grafana.yaml</code></td><td>configura datasources, dashboards, Deployment e o unico <code>NodePort</code></td></tr>
+        <tr><td><code>monitoring/loki.yaml</code></td><td>define logs centralizados com <code>ConfigMap + PVC + Deployment + Service</code></td></tr>
+        <tr><td><code>monitoring/kube-state-metrics.yaml</code></td><td>expoe metricas do estado do cluster para o Prometheus</td></tr>
+        <tr><td><code>dashboards/*.json</code> e <code>scripts/stress-test.ps1</code></td><td>dashboards do Grafana e script para teste de carga</td></tr>
+      </tbody>
+    </table>
+
+    <p class="small">Em resumo: <code>application</code> = app, <code>database</code> = persistencia e mensageria, <code>monitoring</code> = observabilidade. Os PVCs ficam junto de MongoDB, RabbitMQ, Prometheus e Loki.</p>
+
+    <h3>Organizacao da arquitetura no cluster</h3>
+    <p>Com base nessa estrutura, os componentes foram distribuidos no cluster da seguinte forma:</p>
+    <ul>
+      <li><code>backend</code>: Deployment com 4 replicas e Service <code>ClusterIP</code></li>
+      <li><code>frontend</code>: Deployment com 1 replica e Service <code>ClusterIP</code></li>
+      <li><code>mongodb</code>: Deployment com 1 replica, Service <code>ClusterIP</code> e PVC</li>
+      <li><code>rabbitmq</code>: Deployment com 1 replica, Service <code>ClusterIP</code> e PVC</li>
+      <li><code>prometheus</code>: Deployment com 1 replica, Service <code>ClusterIP</code> e PVC</li>
+      <li><code>grafana</code>: Deployment com 1 replica e Service <code>NodePort</code></li>
+      <li><code>kube-state-metrics</code>: coletor de metricas do cluster</li>
+      <li><code>loki</code>: agregacao de logs</li>
+    </ul>
+
+    <h3>Regra de exposicao externa</h3>
+    <ul>
+      <li>Externo: apenas <code>grafana</code></li>
+      <li>Interno: <code>backend</code>, <code>frontend</code>, <code>mongodb</code>, <code>rabbitmq</code>, <code>prometheus</code> e <code>loki</code></li>
+    </ul>
+
+    <h2>Pre-requisitos</h2>
+    <ul>
+      <li>Docker Desktop</li>
+      <li>Minikube</li>
+      <li>kubectl</li>
+      <li>acesso ao Docker Hub para baixar as imagens publicadas</li>
+    </ul>
+
+    <h2>Passo a passo de execucao</h2>
+    <h3>1. Iniciar o cluster</h3>
+    <pre>minikube start
+minikube status</pre>
+
+    <h3>2. Aplicar os manifests</h3>
+    <pre>kubectl apply -k k8s
+kubectl wait --for=condition=ready pod --all -n questionario --timeout=300s</pre>
+    <p class="small">Observacao: esse passo pode levar alguns minutos, principalmente por causa do tempo de inicializacao do RabbitMQ e das validacoes de readiness.</p>
+
+    <img width="1119" height="204" alt="image" src="https://private-user-images.githubusercontent.com/83038670/580089364-17ce87ae-2082-4a0d-95fa-78cbb32f6c21.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NTE1NzksIm5iZiI6MTc3NjQ1MTI3OSwicGF0aCI6Ii84MzAzODY3MC81ODAwODkzNjQtMTdjZTg3YWUtMjA4Mi00YTBkLTk1ZmEtNzhjYmIzMmY2YzIxLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE4NDExOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTA1NDI2YjZkZDQ5N2Y3ZDY3NDVhZTM3MmQxNDcxNGIyMjJjODJlYTgxODI0NjRhOTA5NzIwMmFmNTY3Njg1YWUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.gmMZ6XK32M4KvbYYJuvYQtmNpLTJhpsWtvphbOGUD9g" />
+
+    <h3>3. Validar os recursos</h3>
+    <pre>kubectl get pods -n questionario
+kubectl get svc -n questionario
+kubectl get pvc -n questionario</pre>
+    <ul>
+      <li>backend com 4 pods <code>Running</code></li>
+      <li><code>grafana</code> com <code>NodePort</code></li>
+      <li><code>backend</code>, <code>frontend</code>, <code>mongodb</code>, <code>rabbitmq</code> e <code>prometheus</code> com <code>ClusterIP</code></li>
+      <li>PVCs de MongoDB, RabbitMQ, Prometheus e Loki em estado <code>Bound</code></li>
+    </ul>
+
+    <img width="1119" height="204" alt="image" src="https://private-user-images.githubusercontent.com/83038670/580089966-2c97c5dd-2542-4b0e-b90c-5ee4548598ee.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NTI4MDcsIm5iZiI6MTc3NjQ1MjUwNywicGF0aCI6Ii84MzAzODY3MC81ODAwODk5NjYtMmM5N2M1ZGQtMjU0Mi00YjBlLWI5MGMtNWVlNDU0ODU5OGVlLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE5MDE0N1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTAyZWJjMzQzNWJiMmYxZWVkNjJiN2ExNWY0YzAzMGE4YWJiYWM2YjM3MjdhODA5YzA3MGQ5ODRkZTNmNTIwYzMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.wLHJGm7F9ZX0wlKYk3cDgEzZO7INqKmqglXtIMYIyK4" />
+
+    <h3>4. Acessar a aplicacao</h3>
+    <p>Para atender aos requisitos do trabalho, frontend e backend estao publicados internamente no cluster por meio de <code>Service ClusterIP</code>. Por isso, para acessar a aplicacao localmente durante a demonstracao, e necessario utilizar <code>kubectl port-forward</code> em dois terminais separados.</p>
+    <p><strong>Abra um terminal para o backend e execute:</strong></p>
+    <pre>kubectl port-forward svc/backend 5000:5000 -n questionario</pre>
+    <p><strong>Depois abra outro terminal para o frontend e execute:</strong></p>
+    <pre>kubectl port-forward svc/frontend 8080:80 -n questionario</pre>
+    <p>Abrir no navegador:</p>
+    <ul>
+      <li>Frontend: <code>http://localhost:8080</code></li>
+      <li>Backend: <code>http://localhost:5000/swagger</code></li>
+    </ul>
+    <p>Usuario administrativo padrao:</p>
+    <ul>
+      <li>email: <code>admin@questionario.com</code></li>
+      <li>senha: <code>Admin@123</code></li>
+    </ul>
+
+    <p>Nesta etapa, o objetivo e comprovar que a aplicacao sobe corretamente dentro do cluster, responde no frontend e consegue executar os fluxos principais de uso sem a necessidade de expor os servicos internamente para fora do ambiente Kubernetes.</p>
+
+    <div class="evidence-block">
+      <p><strong>Evidencia 1.</strong> Tela inicial da aplicacao rodando a partir do service interno do frontend com acesso realizado via <code>kubectl port-forward</code>.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579599589-17020cd0-1d41-47fc-a99c-1a34e6dda48c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDMxNDgsIm5iZiI6MTc3NjQ0Mjg0OCwicGF0aCI6Ii84MzAzODY3MC81Nzk1OTk1ODktMTcwMjBjZDAtMWQ0MS00N2ZjLWE5OWMtMWEzNGU2ZGRhNDhjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MjA0OFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWExYmRlZmU3Nzg2N2E4NzIyNGE1NThlZDcyODliNDExMTljOGNkZjkzYTIzNmQ2OTAyM2Y5MmIyZTI4OWQwYjYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.O-HY8HrEyYrhX14ua5IVmIziT0LY7WRzF1OJ3uBMyWk"
+        alt="Tela inicial da aplicacao"
+        width="900"
+      />
+      <p class="caption">A imagem mostra a interface da aplicacao acessivel localmente, preservando a regra da entrega de manter o frontend interno no cluster.</p>
+    </div>
+
+    <div class="evidence-block">
+      <p><strong>Evidencia 2.</strong> Continuidade da navegacao no sistema, demonstrando que as telas carregam corretamente e que o ambiente esta funcional para uso e validacao.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579599729-aa240917-a9dc-45d4-88e0-128c802f7745.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDMxNDgsIm5iZiI6MTc3NjQ0Mjg0OCwicGF0aCI6Ii84MzAzODY3MC81Nzk1OTk3MjktYWEyNDA5MTctYTlkYy00NWQ0LTg4ZTAtMTI4YzgwMmY3NzQ1LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MjA0OFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk2MjNiYTQ2ODUxNzllMzdkOGQyNjEyZDdiODMxY2ExMmUwYWEyNjk3YzJmZWU5ZjhiNmJlZWZmNGU1MzVmY2YmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.lfMM0jmNc0EBPJsRMRbl_b_2-v6iXGA1q8lKp3-JDtI"
+        alt="Tela de navegacao da aplicacao"
+        width="900"
+      />
+      <p class="caption">Esse print complementa a apresentacao funcional do sistema e reforca que a entrega nao se limita apenas ao deploy, mas tambem ao funcionamento da interface.</p>
+    </div>
+
+    <div class="evidence-block">
+      <p><strong>Evidencia 3.</strong> Mais uma tela da aplicacao em execucao, utilizada para reforcar a consistencia visual e operacional do frontend rodando no ambiente Kubernetes.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579600024-d598545e-04fd-49c9-896a-bd68a92dc2f0.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDMxNDgsIm5iZiI6MTc3NjQ0Mjg0OCwicGF0aCI6Ii84MzAzODY3MC81Nzk2MDAwMjQtZDU5ODU0NWUtMDRmZC00OWM5LTg5NmEtYmQ2OGE5MmRjMmYwLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MjA0OFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU4ZDc0ZjQyYzVhNDI0Yzk5NmIwN2NmYzc0NzFhMmQxNjhiZTg0NTExNjA5YzkwZjNjZjk0MjY1OGE0YjU1NDAmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.nHKbuBbS_UByIsfjgekE3-7X-CrAGp4Zb9okATVTKM8"
+          alt="Outra tela da aplicacao"
+        width="900"
+      />
+      <p class="caption">A sequencia de prints ajuda a demonstrar estabilidade de uso e navegacao, fortalecendo a apresentacao da entrega perante a avaliacao.</p>
+    </div>
+
+    <div class="evidence-block">
+      <p><strong>Comunicacao interna com o backend.</strong> A figura abaixo demonstra o frontend consumindo corretamente a API, validando a integracao entre os servicos mesmo com o backend mantido como servico interno do cluster.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579599827-165dfd4f-f804-417f-bf35-4953e0e0c8f0.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDMxNDgsIm5iZiI6MTc3NjQ0Mjg0OCwicGF0aCI6Ii84MzAzODY3MC81Nzk1OTk4MjctMTY1ZGZkNGYtZjgwNC00MTdmLWJmMzUtNDk1M2UwZTBjOGYwLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MjA0OFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTE3NjI4MmI4NWM3MDhjYzUxNzAxNzFjMjFiMGZiZGFmMDEzMWU5MjFmMDlkMGMzNGJiYWZiODk4M2IzNjQwNjQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.GBa66S3_oZBW_ZmNQN9Yro9lZ_kghnH27CpLZMN56to"
+          alt="Comunicacao interna com o backend"
+        width="900"
+      />
+      <p class="caption">Essa evidencia e importante porque mostra que a arquitetura proposta continua funcional mesmo com a restricao de exposicao externa apenas para o Grafana.</p>
+    </div>
+
+    <h3>5. Abrir o Grafana</h3>
+    <pre>minikube service grafana -n questionario</pre>
+    <ul>
+      <li>usuario: <code>admin</code></li>
+      <li>senha: <code>admin123</code></li>
+    </ul>
+
+    <p>O Grafana foi mantido como unico componente acessivel externamente, sendo utilizado para acompanhar metricas da aplicacao, consumo de recursos, quantidade de pods e comportamento do ambiente durante a execucao normal e sob carga.</p>
+
+    <div class="evidence-block">
+      <p><strong>Dashboard 1.</strong> Painel principal de infraestrutura do projeto, reunindo informacoes sobre o cluster e os recursos utilizados na implantacao.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579598677-944dc2bd-5999-4f13-80c6-4609efd0d56d.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDE1MTksIm5iZiI6MTc3NjQ0MTIxOSwicGF0aCI6Ii84MzAzODY3MC81Nzk1OTg2NzctOTQ0ZGMyYmQtNTk5OS00ZjEzLTgwYzYtNDYwOWVmZDBkNTZkLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE1NTMzOVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTZlYWNkMjE0Y2Q3OTQzZDUzYTYzYWQyOWRkMmZmYmUzY2VkZGE1OGRhZjAwNjg3MmQ0M2M0MDBlODZiYTVkNjkmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.901En_nmhqsxMhRdRRy3WVkOTYa1yDkH3nXME1A2bCo"
+          alt="Dashboard de infraestrutura"
+        width="900"
+      />
+      <p class="caption">Esse painel ajuda a evidenciar que o ambiente nao foi apenas implantado, mas tambem observado e validado com boas praticas de monitoramento.</p>
+    </div>
+
+    <div class="evidence-block">
+      <p><strong>Dashboard 2.</strong> Visualizacao complementar das metricas da solucao, reforcando a presenca de observabilidade na arquitetura entregue.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579598781-c58f1908-0e83-4465-be42-c0896b7dbc94.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDI2MzUsIm5iZiI6MTc3NjQ0MjMzNSwicGF0aCI6Ii84MzAzODY3MC81Nzk1OTg3ODEtYzU4ZjE5MDgtMGU4My00NDY1LWJlNDItYzA4OTZiN2RiYzk0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MTIxNVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTFjZjEyMTgyZWZjMGRjNzAxZDQxMzAxMTdkMjUxMDlkNDY0ZDUyZTEwZDRhNTJmZTM1ODlkOGY3OWQ5OTVmNTcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.hPIsgOTTZptT8kNcJB4YSXdhwQWNs8MmyGfJ3hmJIjg"
+          alt="Dashboard complementar"
+        width="900"
+      />
+      <p class="caption">A existencia de dashboards dedicados fortalece o criterio de acompanhamento do ambiente e da saude da aplicacao.</p>
+    </div>
+
+    <div class="evidence-block">
+      <p><strong>Dashboard 3.</strong> Painel com foco no backend e nas metricas ligadas ao negocio, permitindo avaliar comportamento da API durante o uso.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579599265-d3ad92bd-dce0-4045-a507-42e6e7ad8702.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDI3MTEsIm5iZiI6MTc3NjQ0MjQxMSwicGF0aCI6Ii84MzAzODY3MC81Nzk1OTkyNjUtZDNhZDkyYmQtZGNlMC00MDQ1LWE1MDctNDJlNmU3YWQ4NzAyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MTMzMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTdkMWZkNTcwMmNjMzNjOTYzZTc1OTg1M2MzMWZhZTc4OGFhMzkxMGY0OTZiMGMwMjA5ZWFhMzNhNTIyNDU5MTMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.8wrTggX7V3PD-mtcu4vTHQ5-CbtCbx60xynWhQ97-FU"
+          alt="Dashboard backend e negocio"
+        width="900"
+      />
+      <p class="caption">Esse tipo de visualizacao e relevante porque mostra nao apenas infraestrutura, mas tambem o acompanhamento do comportamento do servico principal.</p>
+    </div>
+
+    <div class="evidence-block">
+      <p><strong>Dashboard 4.</strong> Painel complementar do backend, utilizado como apoio para observacao de latencia, volume de requisicoes e comportamento da aplicacao durante testes.</p>
+      <img
+  src="https://private-user-images.githubusercontent.com/83038670/579600634-d3bfe017-7b06-4dac-84f0-bf8f6b450c7c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDI3MTEsIm5iZiI6MTc3NjQ0MjQxMSwicGF0aCI6Ii84MzAzODY3MC81Nzk2MDA2MzQtZDNiZmUwMTctN2IwNi00ZGFjLTg0ZjAtYmY4ZjZiNDUwYzdjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MTMzMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY3ZjJmNzdhOTE1NzNiYjNlYjk3MmQzMDEyODgzMmRmODdjYjQyZDNkMGY0ZDU5MzgxMmVhNjQ5Zjk0MDI2MDQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.bUaOXBCmKHmZ6rYSwYyP5OL2GD-JGGd9npQTeP8zXis"
+          alt="Dashboard backend apos carga"
+        width="900"
+      />
+      <p class="caption">O conjunto desses dashboards evidencia maturidade na entrega, pois demonstra preocupacao com observabilidade e validacao pratica do ambiente implantado.</p>
+    </div>
+
+    <h3>6. Executar o stress test</h3>
+    <p>Antes de iniciar o teste, manter o backend acessivel localmente em outro terminal com o comando abaixo:</p>
+    <pre>kubectl port-forward svc/backend 5000:5000 -n questionario</pre>
+    <p>Com o <code>port-forward</code> ativo, executar o script de carga:</p>
+    <pre>.\k8s\scripts\stress-test.ps1
+.\k8s\scripts\stress-test.ps1 -Requests 5000 -Concurrent 100</pre>
+
+antes do teste de stresse
+<img width="1879" height="350" alt="image" src="https://private-user-images.githubusercontent.com/83038670/580099093-96c5ec92-9d31-496f-92b3-6e2c109cced6.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NTI4MDcsIm5iZiI6MTc3NjQ1MjUwNywicGF0aCI6Ii84MzAzODY3MC81ODAwOTkwOTMtOTZjNWVjOTItOWQzMS00OTZmLTkyYjMtNmUyYzEwOWNjZWQ2LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE5MDE0N1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY3NGU0NDBiOTUyOWExMjM1MzIzMjM4ZDE3MjE3ZmRiMDk3NzhmYTFjYzI3YTI4ZTAzN2U2NDdlZTAwMTc2YjgmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.ksGt7NQKzPpAH_n69jrLO3Vf-ioQzfckFhm9Kayk9gI" />
+
+depois
+<img width="1907" height="930" alt="image" src="https://private-user-images.githubusercontent.com/83038670/580099288-9ea513ac-60c2-4777-a03b-99c328cb0d7c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NTI4MDcsIm5iZiI6MTc3NjQ1MjUwNywicGF0aCI6Ii84MzAzODY3MC81ODAwOTkyODgtOWVhNTEzYWMtNjBjMi00Nzc3LWEwM2ItOTljMzI4Y2IwZDdjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE5MDE0N1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTQ1Y2VmOTBlZWMyNTA3NjI5MDA4NGNjOWRjMTdjYmZlNDlkYjVkZTBkYzMyZTA1NzExZjg0ODY0MWM5NTQ0NDImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.IAHQGhvMeAl-veBQnNbnWc96pimaqYFf_HcqhgHhhxk" />
+
+
+    <h2>Monitoramento configurado</h2>
+    <h3>Prometheus</h3>
+    <ul>
+      <li>coleta metricas do Kubernetes</li>
+      <li>coleta metricas da API em <code>/metrics</code></li>
+      <li>usa PVC para persistencia dos dados</li>
+    </ul>
+
+    <h3>Grafana</h3>
+    <ul>
+      <li>fica acessivel fora do cluster via <code>NodePort</code></li>
+      <li>usa Prometheus como fonte principal de metricas</li>
+      <li>possui dashboards com CPU por pod, memoria por pod, pods ativos, latencia HTTP, total de requisicoes e erros 4xx e 5xx</li>
+    </ul>
+
+    <h3>Loki</h3>
+    <ul>
+      <li>recebe logs estruturados do backend</li>
+      <li>pode ser consultado via Grafana</li>
+    </ul>
+
+    <p>Com esse conjunto de ferramentas, o projeto atende nao apenas ao requisito de deploy em Kubernetes, mas tambem ao requisito de observabilidade, permitindo acompanhar metricas e logs do ambiente de forma centralizada.</p>
+
+    <h2>Pipeline de entrega</h2>
+    <p>O projeto possui pipeline em GitHub Actions para restore, build, testes, build das imagens Docker e push para o Docker Hub.</p>
+    <div class="callout">
+      <strong>Observacao importante</strong>
+      <ul>
+        <li>como o cluster usado e o <code>minikube</code> local, o deploy no cluster nao acontece automaticamente no GitHub hospedado</li>
+        <li>a entrega foi organizada como <code>build/test/push</code> automatico e <code>deploy local</code> com <code>kubectl apply -k k8s</code></li>
+        <li>se necessario, isso pode evoluir para deploy automatico usando <code>self-hosted runner</code></li>
+      </ul>
+    </div>
+
+    <p>A imagem abaixo registra a execucao do pipeline, servindo como evidencia de que o fluxo de integracao continua foi configurado para validar e publicar a aplicacao.</p>
+
+    <img
+  src="https://private-user-images.githubusercontent.com/83038670/579602011-93e241b8-97ce-4cd2-a3a3-09c4deda1bf1.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzY0NDM0OTQsIm5iZiI6MTc3NjQ0MzE5NCwicGF0aCI6Ii84MzAzODY3MC81Nzk2MDIwMTEtOTNlMjQxYjgtOTdjZS00Y2QyLWEzYTMtMDljNGRlZGExYmYxLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDE3VDE2MjYzNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTRlMjAyYjY5OTRmY2I0NTIxYTcwYzZlNDNkZjZhOGQxMTEzOGU4N2QzNGNhNTM4NTRlMDBiMDVhYmE0YmYxNWQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JnJlc3BvbnNlLWNvbnRlbnQtdHlwZT1pbWFnZSUyRnBuZyJ9.KjcyMKC6xmSDied35_ZNIwIF6_nCVkSWkpyiZrP5CHs"
+        alt="Pipeline GitHub Actions"
+      width="900"
+    />
+    <p class="caption">Essa evidencia complementa a entrega mostrando que o projeto tambem possui automacao de build, testes e publicacao das imagens.</p>
+
+    <h2>Atendimento aos requisitos do trabalho</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Requisito</th>
+          <th>Situacao</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Imagem personalizada com Docker</td><td>Atendido</td></tr>
+        <tr><td>Imagem publicada no Docker Hub</td><td>Atendido</td></tr>
+        <tr><td>Aplicacao em Kubernetes com Deployment</td><td>Atendido</td></tr>
+        <tr><td>4 replicas no backend</td><td>Atendido</td></tr>
+        <tr><td>Banco acessivel por ClusterIP</td><td>Atendido</td></tr>
+        <tr><td>Probes de saude</td><td>Atendido</td></tr>
+        <tr><td>Prometheus e Grafana</td><td>Atendido</td></tr>
+        <tr><td>Apenas Grafana acessivel fora do cluster</td><td>Atendido</td></tr>
+        <tr><td>PVC para Prometheus</td><td>Atendido</td></tr>
+        <tr><td>Dashboards com CPU e memoria</td><td>Atendido</td></tr>
+        <tr><td>Pipeline de entrega</td><td>Atendido parcialmente com CI + push</td></tr>
+        <tr><td>Stress test com evidencias</td><td>Atendido</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Comandos uteis</h2>
+    <pre>kubectl get all -n questionario
+kubectl describe deployment backend -n questionario
+kubectl logs -n questionario -l app=backend --tail=100
+kubectl rollout restart deployment backend -n questionario
+kubectl port-forward svc/prometheus 9090:9090 -n questionario
+kubectl port-forward svc/mongodb 27017:27017 -n questionario</pre>
+
+
+  </main>
+</body>
+</html>

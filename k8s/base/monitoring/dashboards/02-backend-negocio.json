@@ -161,18 +161,29 @@
     },
     {
       "id": 7,
-      "title": "Chamadas no Backend",
+      "title": "Pico de Requisicoes/s no Periodo",
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 0, "y": 6, "w": 4, "h": 11 },
-      "targets": [{ "expr": "sum(http_requests_received_total{job=\"backend\"})", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "max_over_time(sum(rate(http_requests_received_total{job=\"backend\"}[1m]))[15m:1m])", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
         "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
       },
       "fieldConfig": {
-        "defaults": { "unit": "short", "decimals": 0, "color": { "fixedColor": "blue", "mode": "fixed" } },
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        },
         "overrides": []
       }
     },
@@ -199,11 +210,12 @@
     },
     {
       "id": 9,
-      "title": "Requisicoes/s por Rota (tempo real)",
+      "title": "Pico de Carga no Backend",
       "type": "timeseries",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 0, "y": 17, "w": 24, "h": 9 },
       "targets": [
+        { "expr": "sum(rate(http_requests_received_total{job=\"backend\"}[1m]))", "legendFormat": "Total backend", "refId": "B" },
         { "expr": "sum(rate(http_requests_received_total{job=\"backend\"}[1m])) by (endpoint, method)", "legendFormat": "{{method}} {{endpoint}}", "refId": "A" }
       ],
       "options": {
@@ -211,8 +223,49 @@
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
       "fieldConfig": {
-        "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" } },
-        "overrides": []
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 18,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Total backend" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
+              { "id": "custom.lineWidth", "value": 4 },
+              { "id": "custom.fillOpacity", "value": 30 }
+            ]
+          }
+        ]
       }
     },
 
@@ -256,7 +309,7 @@
     },
     {
       "id": 11,
-      "title": "Latencia p50 / p95 / p99 (serie temporal)",
+      "title": "Latencia durante Carga (p50 / p95 / p99)",
       "type": "timeseries",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 12, "y": 27, "w": 12, "h": 9 },
@@ -270,8 +323,48 @@
         "tooltip": { "mode": "multi", "sort": "none" }
       },
       "fieldConfig": {
-        "defaults": { "unit": "ms", "color": { "mode": "palette-classic" } },
-        "overrides": []
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 1000 }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "p99" },
+            "properties": [
+              { "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } },
+              { "id": "custom.lineWidth", "value": 3 }
+            ]
+          }
+        ]
       }
     },
 
@@ -360,7 +453,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 0, "y": 55, "w": 6, "h": 5 },
-      "targets": [{ "expr": "questionarios_criados_total", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "sum(questionarios_criados_total) or vector(0)", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -377,7 +470,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 6, "y": 55, "w": 6, "h": 5 },
-      "targets": [{ "expr": "questionarios_encerrados_total", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "sum(questionarios_encerrados_total) or vector(0)", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -394,7 +487,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 12, "y": 55, "w": 6, "h": 5 },
-      "targets": [{ "expr": "questionarios_deletados_total", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "sum(questionarios_deletados_total) or vector(0)", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -411,7 +504,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 18, "y": 55, "w": 6, "h": 5 },
-      "targets": [{ "expr": "sum(erros_dominio_total)", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "sum(erros_dominio_total) or vector(0)", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -439,8 +532,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 0, "y": 60, "w": 24, "h": 8 },
       "targets": [
-        { "expr": "increase(questionarios_criados_total[5m])", "legendFormat": "Criados", "refId": "A" },
-        { "expr": "increase(questionarios_encerrados_total[5m])", "legendFormat": "Encerrados", "refId": "B" }
+        { "expr": "sum(increase(questionarios_criados_total[5m])) or vector(0)", "legendFormat": "Criados", "refId": "A" },
+        { "expr": "sum(increase(questionarios_encerrados_total[5m])) or vector(0)", "legendFormat": "Encerrados", "refId": "B" }
       ],
       "options": {
         "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true },
@@ -469,7 +562,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 0, "y": 69, "w": 8, "h": 5 },
-      "targets": [{ "expr": "respostas_fila_total", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "sum(respostas_fila_total) or vector(0)", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -486,7 +579,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 8, "y": 69, "w": 8, "h": 5 },
-      "targets": [{ "expr": "respostas_processadas_total", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "sum(respostas_processadas_total) or vector(0)", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "area", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -503,7 +596,7 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 16, "y": 69, "w": 8, "h": 5 },
-      "targets": [{ "expr": "respostas_fila_total - respostas_processadas_total", "refId": "A", "instant": true }],
+      "targets": [{ "expr": "(sum(respostas_fila_total) or vector(0)) - (sum(respostas_processadas_total) or vector(0))", "refId": "A", "instant": true }],
       "options": {
         "colorMode": "background", "graphMode": "none", "justifyMode": "center",
         "orientation": "auto", "textMode": "auto",
@@ -531,8 +624,8 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 0, "y": 74, "w": 24, "h": 8 },
       "targets": [
-        { "expr": "increase(respostas_fila_total[1m])", "legendFormat": "Enviadas para Fila", "refId": "A" },
-        { "expr": "increase(respostas_processadas_total[1m])", "legendFormat": "Processadas", "refId": "B" }
+        { "expr": "sum(increase(respostas_fila_total[1m])) or vector(0)", "legendFormat": "Enviadas para Fila", "refId": "A" },
+        { "expr": "sum(increase(respostas_processadas_total[1m])) or vector(0)", "legendFormat": "Processadas", "refId": "B" }
       ],
       "options": {
         "legend": { "calcs": ["sum", "max"], "displayMode": "list", "placement": "bottom", "showLegend": true },
@@ -583,7 +676,7 @@
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "gridPos": { "x": 10, "y": 83, "w": 14, "h": 9 },
       "targets": [
-        { "expr": "increase(erros_dominio_total[5m])", "legendFormat": "{{operacao}}", "refId": "A" }
+        { "expr": "sum(increase(erros_dominio_total[5m])) by (operacao)", "legendFormat": "{{operacao}}", "refId": "A" }
       ],
       "options": {
         "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom", "showLegend": true },

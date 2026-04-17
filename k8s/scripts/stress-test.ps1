@@ -1,31 +1,47 @@
+ï»¿# ============================================================
+# STRESS TEST - Testa a aplicaÃ§Ã£o sob carga
 # ============================================================
-# STRESS TEST - Testa a aplicação sob carga
-# ============================================================
-# Faz múltiplas requisições simultâneas no backend
-# pra gerar métricas visíveis no Grafana
+# Faz mÃºltiplas requisiÃ§Ãµes simultÃ¢neas no backend
+# pra gerar mÃ©tricas visÃ­veis no Grafana
 # ============================================================
 
 param(
-    [int]$Requests = 1000,      # Número de requisições
-    [int]$Concurrent = 50       # Requisições simultâneas
+    [int]$Requests = 1000,      # NÃºmero de requisiÃ§Ãµes
+    [int]$Concurrent = 50,      # RequisiÃ§Ãµes simultÃ¢neas
+    [string]$BackendBaseUrl = "http://localhost:5000"
 )
 
 Write-Host "?????????????????????????????????????????????????????" -ForegroundColor Cyan
-Write-Host "? STRESS TEST - Questionário Online" -ForegroundColor Yellow
+Write-Host "? STRESS TEST - QuestionÃ¡rio Online" -ForegroundColor Yellow
 Write-Host "?????????????????????????????????????????????????????" -ForegroundColor Cyan
 Write-Host ""
 
-# Pega URL do backend
-$backendUrl = minikube service backend -n questionario --url
-Write-Host "?? Target: $backendUrl/api/questionario" -ForegroundColor Green
-Write-Host "?? Requisições: $Requests" -ForegroundColor Green
+# Usa o backend exposto localmente via port-forward.
+$backendUrl = $BackendBaseUrl.TrimEnd('/')
+$targetUrl = "$backendUrl/api/questionario"
+
+try {
+    Invoke-WebRequest -Uri $targetUrl -Method GET -TimeoutSec 5 -ErrorAction Stop | Out-Null
+} catch {
+    Write-Host "!! Nao foi possivel acessar $targetUrl" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Antes de executar o stress test, abra outro terminal e rode:" -ForegroundColor Yellow
+    Write-Host "   kubectl port-forward svc/backend 5000:5000 -n questionario" -ForegroundColor White
+    Write-Host ""
+    Write-Host "Se voce estiver usando outra porta, informe manualmente:" -ForegroundColor Yellow
+    Write-Host "   .\\k8s\\scripts\\stress-test.ps1 -BackendBaseUrl http://localhost:SUA_PORTA" -ForegroundColor White
+    exit 1
+}
+
+Write-Host "?? Target: $targetUrl" -ForegroundColor Green
+Write-Host "?? RequisiÃ§Ãµes: $Requests" -ForegroundColor Green
 Write-Host "? Concorrentes: $Concurrent" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "? Iniciando stress test..." -ForegroundColor Yellow
 Write-Host ""
 
-# Função para fazer requisição
+# FunÃ§Ã£o para fazer requisiÃ§Ã£o
 function Invoke-LoadTest {
     param($url)
 
@@ -35,12 +51,12 @@ function Invoke-LoadTest {
     $startTime = Get-Date
 
     for ($i = 0; $i -lt $Requests; $i++) {
-        # Limita concorrência
+        # Limita concorrÃªncia
         while (($jobs | Where-Object { $_.State -eq 'Running' }).Count -ge $Concurrent) {
             Start-Sleep -Milliseconds 10
         }
 
-        # Inicia requisição em background
+        # Inicia requisiÃ§Ã£o em background
         $jobs += Start-Job -ScriptBlock {
             param($url)
             try {
@@ -51,7 +67,7 @@ function Invoke-LoadTest {
             }
         } -ArgumentList $url
 
-        # Mostra progresso a cada 50 requisições
+        # Mostra progresso a cada 50 requisiÃ§Ãµes
         if (($i + 1) % 50 -eq 0) {
             $completed = ($jobs | Where-Object { $_.State -eq 'Completed' }).Count
             $percent = [math]::Round(($completed / $Requests) * 100, 2)
@@ -59,9 +75,9 @@ function Invoke-LoadTest {
         }
     }
 
-    # Aguarda todas as requisições terminarem
+    # Aguarda todas as requisiÃ§Ãµes terminarem
     Write-Host ""
-    Write-Host "? Aguardando requisições finalizarem..." -ForegroundColor Yellow
+    Write-Host "? Aguardando requisiÃ§Ãµes finalizarem..." -ForegroundColor Yellow
     $jobs | Wait-Job | Out-Null
 
     # Conta sucessos e erros
@@ -82,18 +98,18 @@ function Invoke-LoadTest {
     Write-Host "?????????????????????????????????????????????????????" -ForegroundColor Green
     Write-Host ""
     Write-Host "?? RESULTADOS:" -ForegroundColor Cyan
-    Write-Host "   Total de requisições: $Requests" -ForegroundColor White
+    Write-Host "   Total de requisiÃ§Ãµes: $Requests" -ForegroundColor White
     Write-Host "   Bem-sucedidas: $success" -ForegroundColor Green
     Write-Host "   Erros: $errors" -ForegroundColor $(if ($errors -gt 0) { 'Red' } else { 'Green' })
-    Write-Host "   Duração: $([math]::Round($duration, 2))s" -ForegroundColor White
-    Write-Host "   Requisições/segundo: $rps" -ForegroundColor Yellow
+    Write-Host "   DuraÃ§Ã£o: $([math]::Round($duration, 2))s" -ForegroundColor White
+    Write-Host "   RequisiÃ§Ãµes/segundo: $rps" -ForegroundColor Yellow
     Write-Host ""
 }
 
 # Executa teste
-Invoke-LoadTest -url "$backendUrl/api/questionario"
+Invoke-LoadTest -url $targetUrl
 
-# Instruções pós-teste
+# InstruÃ§Ãµes pÃ³s-teste
 Write-Host "?????????????????????????????????????????????????????" -ForegroundColor Cyan
 Write-Host "?? GRAFANA - CAPTURE OS DASHBOARDS AGORA!" -ForegroundColor Yellow
 Write-Host "?????????????????????????????????????????????????????" -ForegroundColor Cyan
@@ -105,9 +121,10 @@ Write-Host "?? Login: admin / admin123" -ForegroundColor Green
 Write-Host ""
 Write-Host "?? Tire prints dos dashboards mostrando:" -ForegroundColor Yellow
 Write-Host "   - Aumento de CPU" -ForegroundColor White
-Write-Host "   - Aumento de Memória" -ForegroundColor White
-Write-Host "   - Número de requisições HTTP" -ForegroundColor White
-Write-Host "   - Latência das requisições" -ForegroundColor White
+Write-Host "   - Aumento de MemÃ³ria" -ForegroundColor White
+Write-Host "   - NÃºmero de requisiÃ§Ãµes HTTP" -ForegroundColor White
+Write-Host "   - LatÃªncia das requisiÃ§Ãµes" -ForegroundColor White
 Write-Host ""
-Write-Host "?? Salve os prints para o relatório do trabalho!" -ForegroundColor Yellow
+Write-Host "?? Salve os prints para o relatÃ³rio do trabalho!" -ForegroundColor Yellow
 Write-Host ""
+
