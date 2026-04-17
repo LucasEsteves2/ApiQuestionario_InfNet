@@ -11,8 +11,8 @@ env:
   FRONTEND_IMAGE: luqui25/lucas-fluminense-frontend
 
 jobs:
-  tests:
-    name: Tests
+  build-validation:
+    name: Validate Solution Build
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,27 @@ jobs:
       - name: Restore
         run: dotnet restore Back/QuestionarioOnline.sln
 
-      - name: Build
+      - name: Build Solution
+        run: dotnet build Back/QuestionarioOnline.sln --no-restore --configuration Release
+
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: build-validation
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore Back/QuestionarioOnline.sln
+
+      - name: Build Solution
         run: dotnet build Back/QuestionarioOnline.sln --no-restore --configuration Release
 
       - name: Test

@@ -56,6 +56,6 @@ coverage.cobertura.xml
 publish/
 
 # ============================
-# Variaveis de ambiente (secrets)
+# Variaveis de ambiente
 # ============================
-.env
+# .env versionado de proposito neste projeto academico/local
