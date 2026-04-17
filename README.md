@@ -1,9 +1,26 @@
-﻿﻿## 📋 Sistema de Questionários Online
+﻿## 📋 Sistema de Questionários Online
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet)](https://dotnet.microsoft.com/)
 [![C#](https://img.shields.io/badge/C%23-12.0-239120?style=flat&logo=c-sharp)](https://docs.microsoft.com/en-us/dotnet/csharp/)
 [![Azure](https://img.shields.io/badge/Azure-Queue%20Storage-0089D6?style=flat&logo=microsoft-azure)](https://azure.microsoft.com/)
 [![Infnet](https://img.shields.io/badge/Infnet-Pós--Graduação-red.svg)](https://www.infnet.edu.br/)
+
+## 📁 Estrutura da Raiz
+
+```text
+Fluminense/
+|-- Back/
+|-- Front/
+|-- k8s/
+|-- .github/
+|-- docker-compose.yml
+`-- .env
+```
+
+- **Back**: backend .NET DDD+CLEAN CODE
+- **Front**: frontend da aplicação
+- **k8s**: manifests, scripts, monitoramento e documentação Kubernetes
+- **.github**: esteira CI
 
 ## 🎓 **Contexto Acadêmico**
 
@@ -96,30 +113,6 @@ Todos os containers devem estar com status `Up`.
 
 ---
 
-### **👤 6. Usuários Pré-cadastrados (Seed)**
-
-O sistema cria automaticamente os seguintes usuários na primeira execução:
-
-| Usuário | Email | Senha | Role |
-|---------|-------|-------|------|
-| Administrador | `admin@questionario.com` | `Admin@123` | Admin |
-| Analista Exemplo | `analista@questionario.com` | `Analista@123` | Analista |
-
----
-
-### **🛑 Parar a aplicação**
-
-```bash
-docker-compose down
-```
-
-Para parar **e apagar os dados do banco**:
-
-```bash
-docker-compose down -v
-```
-
----
 
 ### **🐳 Docker Hub (Imagens Prontas)**
 
@@ -130,6 +123,55 @@ As imagens também estão disponíveis no Docker Hub:
 
 ---
 
+
+## ☸️ **Kubernetes (Opcional com Minikube)**
+
+Caso queira subir a aplicação no ambiente Kubernetes, a estrutura já está pronta na pasta **`k8s/`**.
+
+### **Pré-requisitos**
+
+- **Minikube**
+- **kubectl**
+
+### **1. Iniciar o cluster**
+
+```bash
+minikube start
+```
+
+### **2. Aplicar os manifests**
+
+```bash
+kubectl apply -k k8s
+```
+
+### **3. Aguardar os pods ficarem prontos**
+
+```bash
+kubectl wait --for=condition=ready pod --all -n questionario --timeout=300s
+```
+
+### **4. Acessar localmente com port-forward**
+
+Em um terminal:
+
+```bash
+kubectl port-forward svc/backend 5000:5000 -n questionario
+```
+
+Em outro terminal:
+
+```bash
+kubectl port-forward svc/frontend 8080:80 -n questionario
+```
+
+### **5. Acessos**
+
+- **Frontend**: http://localhost:8080
+- **Backend**: http://localhost:5000/api
+
+
+## 🔵 **BackEnd**
 
 ## 🏗️ **Arquitetura**
 
